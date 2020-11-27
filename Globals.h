@@ -12,6 +12,8 @@ void log(const char file[], int line, const char* format, ...);
 #define RADTODEG 57.295779513082320876f
 
 typedef unsigned int uint;
+typedef unsigned __int32 uint32;
+typedef unsigned __int64 uint64;
 
 enum update_status
 {
@@ -19,6 +21,10 @@ enum update_status
 	UPDATE_STOP,
 	UPDATE_ERROR
 };
+
+// Performance macros
+#define PERF_START(timer) timer.Start()
+#define PERF_PEEK(timer) LOG("%s took %f ms", __FUNCTION__, timer.ReadMs())
 
 // Configuration -----------
 #define SCREEN_WIDTH 1024
