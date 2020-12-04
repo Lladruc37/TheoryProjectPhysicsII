@@ -37,6 +37,11 @@ update_status ModulePhysics::PreUpdate()
 	return UPDATE_CONTINUE;
 }
 
+update_status ModulePhysics::Update(float dt)
+{
+    return UPDATE_CONTINUE;
+}
+
 // 
 update_status ModulePhysics::PostUpdate()
 {
@@ -84,3 +89,12 @@ bool ModulePhysics::CleanUp()
 
 	return true;
 }
+
+void ModulePhysics::UpdatePhysics(iPoint& pos, fPoint& speed, fPoint acceleration, float dt)
+{
+    // verlet
+    pos.x = pos.x + speed.x * dt;
+    pos.y = pos.y + speed.y * dt + (gravity * dt * dt * 0.5);
+    speed.y = speed.y + gravity * dt;
+}
+
