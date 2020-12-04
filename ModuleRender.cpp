@@ -45,27 +45,6 @@ update_status ModuleRender::PreUpdate()
 	return UPDATE_CONTINUE;
 }
 
-// Update: debug camera
-update_status ModuleRender::Update(float dt)
-{
-	/*
-	int speed = 3;
-
-	if(App->input->GetKey(SDL_SCANCODE_UP) == KEY_REPEAT)
-		App->renderer->camera.y += speed;
-
-	if(App->input->GetKey(SDL_SCANCODE_DOWN) == KEY_REPEAT)
-		App->renderer->camera.y -= speed;
-
-	if(App->input->GetKey(SDL_SCANCODE_LEFT) == KEY_REPEAT)
-		App->renderer->camera.x += speed;
-
-	if(App->input->GetKey(SDL_SCANCODE_RIGHT) == KEY_REPEAT)
-		App->renderer->camera.x -= speed;
-	*/
-	return UPDATE_CONTINUE;
-}
-
 // PostUpdate present buffer to screen
 update_status ModuleRender::PostUpdate()
 {
@@ -88,22 +67,30 @@ bool ModuleRender::CleanUp()
 }
 
 // Blit to screen
-bool ModuleRender::Blit(SDL_Texture* texture, int x, int y, SDL_Rect* section, float speed, double angle, int pivot_x, int pivot_y )
+bool ModuleRender::Blit(SDL_Texture* texture, int x, int y, bool fullscreen, SDL_Rect* section, float speed, double angle, int pivot_x, int pivot_y )
 {
 	bool ret = true;
 	SDL_Rect rect;
 	rect.x = (int) (camera.x * speed) + x * SCREEN_SIZE;
 	rect.y = (int) (camera.y * speed) + y * SCREEN_SIZE;
 
-	if(section != NULL)
-	{
-		rect.w = section->w;
-		rect.h = section->h;
-	}
-	else
-	{
-		SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
-	}
+    if (fullscreen == true)
+    {
+        rect.w = (int)SCREEN_WIDTH;
+        rect.h = (int)SCREEN_HEIGHT;
+    }
+    else
+    {
+        if (section != NULL)
+        {
+            rect.w = section->w;
+            rect.h = section->h;
+        }
+        else
+        {
+            SDL_QueryTexture(texture, NULL, NULL, &rect.w, &rect.h);
+        }
+    }
 
 	rect.w *= SCREEN_SIZE;
 	rect.h *= SCREEN_SIZE;

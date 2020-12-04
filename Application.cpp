@@ -20,7 +20,6 @@ Application::Application()
 	// Main Modules
 	AddModule(window);
 	AddModule(physics);
-	AddModule(renderer);
 	AddModule(textures);
 	AddModule(input);
 	AddModule(audio);
@@ -30,6 +29,9 @@ Application::Application()
 	
 	// Player
 	AddModule(player);
+
+    // Renderer
+    AddModule(renderer);
 
     PERF_PEEK(ptimer);
 }
