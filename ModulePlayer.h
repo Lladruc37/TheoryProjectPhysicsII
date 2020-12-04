@@ -23,7 +23,7 @@ public:
 	virtual ~ModulePlayer();
 
 	bool Start();
-	update_status Update();
+	update_status Update(float dt);
 	bool CleanUp();
 
 public:

@@ -30,7 +30,7 @@ bool ModuleSceneIntro::CleanUp()
 }
 
 // Update: draw background
-update_status ModuleSceneIntro::Update()
+update_status ModuleSceneIntro::Update(float dt)
 {
 	
 

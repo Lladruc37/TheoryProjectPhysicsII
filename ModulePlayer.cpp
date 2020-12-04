@@ -25,7 +25,7 @@ bool ModulePlayer::CleanUp()
 }
 
 // Update: draw background
-update_status ModulePlayer::Update()
+update_status ModulePlayer::Update(float dt)
 {
 	return UPDATE_CONTINUE;
 }

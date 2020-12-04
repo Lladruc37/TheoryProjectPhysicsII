@@ -46,7 +46,7 @@ update_status ModuleRender::PreUpdate()
 }
 
 // Update: debug camera
-update_status ModuleRender::Update()
+update_status ModuleRender::Update(float dt)
 {
 	/*
 	int speed = 3;

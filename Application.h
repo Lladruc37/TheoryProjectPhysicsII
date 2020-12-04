@@ -3,6 +3,9 @@
 #include "p2List.h"
 #include "Globals.h"
 #include "Module.h"
+#include "PerfTimer.h"
+#include "Timer.h"
+
 #include "ModuleWindow.h"
 #include "ModuleRender.h"
 #include "ModuleTextures.h"
@@ -28,6 +31,19 @@ private:
 
 	p2List<Module*> list_modules;
 
+    // Frame variables
+    PerfTimer ptimer;
+    uint64 frameCount = 0;
+
+    Timer startupTime;
+    Timer frameTime;
+    Timer lastSecFrameTime;
+    uint32 lastSecFrameCount = 0;
+    uint32 prevLastSecFrameCount = 0;
+    float dt = 0.0f;
+    float cappedMs = -1;
+    int cap = 60;
+
 public:
 
 	Application();
@@ -40,4 +56,6 @@ public:
 private:
 
 	void AddModule(Module* mod);
+    void PrepareUpdate();
+    void FinishUpdate();
 };
