@@ -187,5 +187,5 @@ void Application::FinishUpdate()
     }
 
     // Measure accurately the amount of time SDL_Delay() actually waits compared to what was expected
-    PERF_PEEK(ptimer);
+    //PERF_PEEK(ptimer);
 }

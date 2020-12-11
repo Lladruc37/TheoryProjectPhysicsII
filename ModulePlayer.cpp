@@ -27,6 +27,25 @@ bool ModulePlayer::CleanUp()
 
 update_status ModulePlayer::PreUpdate()
 {
+    if (App->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN)
+    {
+        force.y = 5.0f;
+    }
+
+    if (App->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN)
+    {
+        force.x = -5.0f;
+    }
+
+    if (App->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN)
+    {
+        force.y = -5.0f;
+    }
+
+    if (App->input->GetKey(SDL_SCANCODE_D) == KEY_DOWN)
+    {
+        force.x = 5.0f;
+    }
     return UPDATE_CONTINUE;
 };
 
@@ -38,6 +57,7 @@ update_status ModulePlayer::Update(float dt)
 
 update_status ModulePlayer::PostUpdate()
 {
+    App->renderer->Blit(player, 0, 0, false);
     return UPDATE_CONTINUE;
 };
 

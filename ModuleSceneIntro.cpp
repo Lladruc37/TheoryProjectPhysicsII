@@ -23,7 +23,7 @@ bool ModuleSceneIntro::Start()
     //App->audio->PlayMusic("pinball/audio/music/TitleScreen.ogg", 0.0f);
 
     // GAME //
-    startGame = false;
+    startGame = true;
     backgroundGame = App->textures->Load("Assets/Textures/BG.png");
 
 	return ret;
