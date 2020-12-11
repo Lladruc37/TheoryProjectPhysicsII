@@ -15,9 +15,11 @@ public:
 	update_status PostUpdate();
 	bool CleanUp();
 
+    fPoint Force2Accel(fPoint force, int mass);
     void UpdatePhysics(iPoint& pos, fPoint& speed, fPoint acceleration, float dt);
+    void ResolveCollisions(iPoint& pos, iPoint nextPos, fPoint& speed, fPoint nextSpeed, int width, int height); // Requires Raycast for the future
 
 private:
-    float gravity = 600.0f;
+    fPoint gravity;
 	bool debug;
 };

@@ -54,6 +54,7 @@ update_status ModuleSceneIntro::PreUpdate()
             if (startGame)
             {
                 App->player->Enable();
+                App->physics->Enable();
                 startGame = false;
             }
             break;

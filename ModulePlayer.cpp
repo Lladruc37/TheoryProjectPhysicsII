@@ -14,6 +14,9 @@ bool ModulePlayer::Start()
 {
 	LOG("Loading player");
     player = App->textures->Load("Assets/Textures/Rocket.png");
+    mass = 2;
+    width = 101;
+    height = 273;
 	return true;
 }
 
@@ -29,22 +32,22 @@ update_status ModulePlayer::PreUpdate()
 {
     if (App->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN)
     {
-        force.y = 5.0f;
+        totalForce.y = -12500.0f;
     }
 
     if (App->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN)
     {
-        force.x = -5.0f;
+        totalForce.x = -10000.0f;
     }
 
     if (App->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN)
     {
-        force.y = -5.0f;
+        totalForce.y = 10000.0f;
     }
 
     if (App->input->GetKey(SDL_SCANCODE_D) == KEY_DOWN)
     {
-        force.x = 5.0f;
+        totalForce.x = 10000.0f;
     }
     return UPDATE_CONTINUE;
 };
@@ -52,12 +55,17 @@ update_status ModulePlayer::PreUpdate()
 // Update: draw background
 update_status ModulePlayer::Update(float dt)
 {
+    nextPos = position;
+    nextSpeed = speed;
+    fPoint a = App->physics->Force2Accel(totalForce, mass);
+    App->physics->UpdatePhysics(nextPos, nextSpeed, a, dt);
+    App->physics->ResolveCollisions(position, nextPos, speed, nextSpeed, width, height);
 	return UPDATE_CONTINUE;
 }
 
 update_status ModulePlayer::PostUpdate()
 {
-    App->renderer->Blit(player, 0, 0, false);
+    App->renderer->Blit(player, position.x, position.y, false);
     return UPDATE_CONTINUE;
 };
 

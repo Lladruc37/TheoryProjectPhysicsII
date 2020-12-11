@@ -19,7 +19,11 @@ public:
 public:
     SDL_Texture* player;
     iPoint position;
+    iPoint nextPos;
+    int width;
+    int height;
     fPoint speed;
-    iPoint force;
+    fPoint nextSpeed;
+    fPoint totalForce;
     int mass;
 };

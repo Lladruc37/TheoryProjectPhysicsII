@@ -90,6 +90,24 @@ public:
 		return(*this);
 	}
 
+    p2Point& Sqrtf(float x)
+    {
+        float number;
+        float sqrt;
+        sqrt = x / 2;
+        number = 0;
+        if (x <= 0)
+        {
+            return number;
+        }
+        while (sqrt != number)
+        {
+            number = sqrt;
+            sqrt = (x / number + number) / 2;
+        }
+        return sqrt;
+    }
+
 	// Distances ---------------------------------------------
 	TYPE DistanceTo(const p2Point& v) const
 	{
