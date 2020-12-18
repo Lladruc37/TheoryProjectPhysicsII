@@ -17,7 +17,7 @@ bool ModulePhysics::Start()
 {
 	LOG("Creating Physics 2D environment");
     gravity.x = 0.0f;
-    gravity.y = 6000.0f;
+    gravity.y = 60.0f;
 	return true;
 }
 
@@ -62,10 +62,10 @@ fPoint ModulePhysics::Force2Accel(fPoint force, int mass)
 void ModulePhysics::UpdatePhysics(iPoint& pos, fPoint& speed, fPoint a, float dt)
 {
     // verlet
-    pos.x = pos.x + speed.x * dt + ((gravity.x + a.x) * dt * dt * 0.5);
-    speed.x = speed.x + (gravity.x + a.x) * dt;
+    pos.x = pos.x + speed.x * dt + (a.x * dt * dt * 0.5);
+    speed.x = speed.x + (a.x * dt);
     pos.y = pos.y + speed.y * dt + ((gravity.y + a.y) * dt * dt * 0.5);
-    speed.y = speed.y + (gravity.y + a.y) * dt;
+    speed.y = speed.y + ((gravity.y + a.y) * dt);
 }
 
 void ModulePhysics::ResolveCollisions(iPoint& pos, iPoint nextPos, fPoint& speed, fPoint nextSpeed, int width, int height)
@@ -81,29 +81,8 @@ void ModulePhysics::ResolveCollisions(iPoint& pos, iPoint nextPos, fPoint& speed
 
 
 
-    if (nextPos.x <= 0)
-    {
-        nextPos.x = 0;
-        nextSpeed.x = 0.0f;
-    }
-    if ((nextPos.x + width) > (App->renderer->camera.w))
-    {
-        nextPos.x = App->renderer->camera.w - width;
-        nextSpeed.x = 0.0f;
-    }
-    if (nextPos.y <= 0)
-    {
-        nextPos.y = 0;
-        nextSpeed.y = 0.0f;
-    }
-    if ((nextPos.y + height) > (App->renderer->camera.h))
-    {
-        nextPos.y = App->renderer->camera.h - height;
-        nextSpeed.y = -nextSpeed.y / 2;
-        if (nextSpeed.y < 0.001f)
-            nextSpeed.y = 0.0f;
-    }
-    LOG("pos: %d, %d speed: %d, %d", nextPos.x, nextPos.y, nextSpeed.x, nextSpeed.y);
+
+    LOG("pos: %d, %d speed: %f, %f", nextPos.x, nextPos.y, nextSpeed.x, nextSpeed.y);
     pos.x = nextPos.x;
     pos.y = nextPos.y;
     speed.x = nextSpeed.x;

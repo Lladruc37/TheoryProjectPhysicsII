@@ -15,8 +15,10 @@ bool ModulePlayer::Start()
 	LOG("Loading player");
     player = App->textures->Load("Assets/Textures/Rocket.png");
     mass = 2;
-    width = 101;
-    height = 273;
+    width = 51;
+    height = 137;
+    position.x = 200;
+    position.y = 100;
 	return true;
 }
 
@@ -30,25 +32,54 @@ bool ModulePlayer::CleanUp()
 
 update_status ModulePlayer::PreUpdate()
 {
-    if (App->input->GetKey(SDL_SCANCODE_W) == KEY_DOWN)
+    if (App->input->GetKey(SDL_SCANCODE_W) == KEY_REPEAT)
     {
-        totalForce.y = -12500.0f;
+        if ((position.y + height) > (App->renderer->camera.h))
+        {
+            totalForce.y = -100000.0f;
+        }
+        else
+        {
+            totalForce.y = -1000.0f;
+        }
     }
 
-    if (App->input->GetKey(SDL_SCANCODE_A) == KEY_DOWN)
+    if (App->input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT)
     {
-        totalForce.x = -10000.0f;
+        if ((position.x + width) > (App->renderer->camera.w))
+        {
+            totalForce.x = -25000.0f;
+        }
+        else
+        {
+            totalForce.x = -250.0f;
+        }
     }
 
-    if (App->input->GetKey(SDL_SCANCODE_S) == KEY_DOWN)
+    if (App->input->GetKey(SDL_SCANCODE_S) == KEY_REPEAT)
     {
-        totalForce.y = 10000.0f;
+        if (position.y <= 0)
+        {
+            totalForce.y = 25000.0f;
+        }
+        else
+        {
+            totalForce.y = 250.0f;
+        }
     }
 
-    if (App->input->GetKey(SDL_SCANCODE_D) == KEY_DOWN)
+    if (App->input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT)
     {
-        totalForce.x = 10000.0f;
+        if (position.x <= 0)
+        {
+            totalForce.x = 25000.0f;
+        }
+        else
+        {
+            totalForce.x = 250.0f;
+        }
     }
+
     return UPDATE_CONTINUE;
 };
 
@@ -60,6 +91,32 @@ update_status ModulePlayer::Update(float dt)
     fPoint a = App->physics->Force2Accel(totalForce, mass);
     App->physics->UpdatePhysics(nextPos, nextSpeed, a, dt);
     App->physics->ResolveCollisions(position, nextPos, speed, nextSpeed, width, height);
+
+    // Car boundries
+    if (position.x <= 0)
+    {
+        position.x = 0;
+        speed.x = 0.0f;
+        a.x = 0.0f;
+    }
+    if ((position.x + width) > (App->renderer->camera.w))
+    {
+        position.x = App->renderer->camera.w - width;
+        speed.x = 0.0f;
+        a.x = 0.0f;
+    }
+    if (position.y <= 0)
+    {
+        position.y = 0;
+        speed.y = 0.0f;
+        a.y = 0.0f;
+    }
+    if ((position.y + height) > (App->renderer->camera.h))
+    {
+        position.y = App->renderer->camera.h - height;
+        speed.y = 0.0f;
+        a.y = 0.0f;
+    }
 	return UPDATE_CONTINUE;
 }
 
