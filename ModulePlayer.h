@@ -22,6 +22,7 @@ public:
     iPoint nextPos;
     int width;
     int height;
+    float angle;
     fPoint speed;
     fPoint nextSpeed;
     fPoint totalForce;

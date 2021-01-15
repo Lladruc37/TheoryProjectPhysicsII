@@ -19,7 +19,9 @@ public:
     void UpdatePhysics(iPoint& pos, fPoint& speed, fPoint acceleration, float dt);
     void ResolveCollisions(iPoint& pos, iPoint nextPos, fPoint& speed, fPoint nextSpeed, int width, int height); // Requires Raycast for the future
 
+public:
+	fPoint gravity;
+
 private:
-    fPoint gravity;
 	bool debug;
 };

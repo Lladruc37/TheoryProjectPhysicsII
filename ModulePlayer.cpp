@@ -15,8 +15,9 @@ bool ModulePlayer::Start()
 	LOG("Loading player");
     player = App->textures->Load("Assets/Textures/Rocket.png");
     mass = 2;
-    width = 51;
-    height = 137;
+    width = 120;
+    height = 56;
+    angle = 0.0f;
     position.x = 200;
     position.y = 100;
     nextPos.x = position.x;
@@ -42,16 +43,24 @@ bool ModulePlayer::CleanUp()
 
 update_status ModulePlayer::PreUpdate()
 {
+    if (App->input->GetKey(SDL_SCANCODE_Q) == KEY_REPEAT)
+    {
+        angle -= 1.0f;
+    }
+    if (App->input->GetKey(SDL_SCANCODE_E) == KEY_REPEAT)
+    {
+        angle += 1.0f;
+    }
     if (App->input->GetKey(SDL_SCANCODE_W) == KEY_REPEAT)
     {
-        if ((position.y + height) > (App->renderer->camera.h))
-        {
-            totalForce.y = -100000.0f;
-        }
-        else
-        {
+        //if ((position.y + height) > (App->renderer->camera.h))
+        //{
             totalForce.y = -1000.0f;
-        }
+        //}
+        //else
+        /*{
+            totalForce.y = -1000.0f;
+        }*/
 
         if (!isMovingUp)
         {
@@ -70,14 +79,14 @@ update_status ModulePlayer::PreUpdate()
 
     if (App->input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT)
     {
-        if ((position.x + width) > (App->renderer->camera.w))
+        /*if ((position.x + width) > (App->renderer->camera.w))
         {
             totalForce.x = -25000.0f;
         }
         else
-        {
-            totalForce.x = -250.0f;
-        }
+        {*/
+            totalForce.x = -1000.0f;
+        //}
 
         if (!isMovingLeft)
         {
@@ -96,14 +105,14 @@ update_status ModulePlayer::PreUpdate()
 
     if (App->input->GetKey(SDL_SCANCODE_S) == KEY_REPEAT)
     {
-        if (position.y <= 0)
-        {
-            totalForce.y = 25000.0f;
-        }
-        else
+        //if (position.y <= 0)
+        //{
+            totalForce.y = 1000.0f;
+        //}
+        /*else
         {
             totalForce.y = 250.0f;
-        }
+        }*/
 
         if (!isMovingRight)
         {
@@ -122,14 +131,14 @@ update_status ModulePlayer::PreUpdate()
 
     if (App->input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT)
     {
-        if (position.x <= 0)
+        /*if (position.x <= 0)
         {
             totalForce.x = 25000.0f;
         }
         else
-        {
-            totalForce.x = 250.0f;
-        }
+        {*/
+            totalForce.x = 1000.0f;
+        //}
 
         if (!isMovingDown)
         {
@@ -159,28 +168,28 @@ update_status ModulePlayer::Update(float dt)
     App->physics->ResolveCollisions(position, nextPos, speed, nextSpeed, width, height);
 
     // Car boundries
-    if (position.x <= 0)
+    if (position.x <= 0) //Left bound
     {
-        position.x = 0;
-        speed.x = 0.0f;
+        position.x = 1;
+        //speed.x = 0.0f;
         a.x = 0.0f;
     }
-    if ((position.x + width) > (App->renderer->camera.w))
+    if ((position.x + width) > (App->renderer->camera.w)) //Right bound
     {
-        position.x = App->renderer->camera.w - width;
-        speed.x = 0.0f;
+        position.x = App->renderer->camera.w - width - 1;
+        //speed.x = 0.0f;
         a.x = 0.0f;
     }
-    if (position.y <= 0 && App->scene_intro->currentScreen == GameScreen::MOON)
+    if (position.y <= 0 && App->scene_intro->currentScreen == GameScreen::MOON) //Up bound
     {
-        position.y = 0;
-        speed.y = 0.0f;
+        position.y = 1;
+        //speed.y = 0.0f;
         a.y = 0.0f;
     }
-    if ((position.y + height) > (App->renderer->camera.h) && App->scene_intro->currentScreen == GameScreen::EARTH)
+    if ((position.y + height) > (App->renderer->camera.h) && App->scene_intro->currentScreen == GameScreen::EARTH) //Bottom bound
     {
-        position.y = App->renderer->camera.h - height;
-        speed.y = 0.0f;
+        position.y = App->renderer->camera.h - height - 1;
+        //speed.y = 0.0f;
         a.y = 0.0f;
     }
 	return UPDATE_CONTINUE;
@@ -188,7 +197,7 @@ update_status ModulePlayer::Update(float dt)
 
 update_status ModulePlayer::PostUpdate()
 {
-    App->renderer->Blit(player, position.x, position.y, false);
+    App->renderer->Blit(player, position.x, position.y, false, (double)angle);
     return UPDATE_CONTINUE;
 };
 

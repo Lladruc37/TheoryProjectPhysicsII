@@ -101,6 +101,8 @@ update_status ModuleSceneIntro::PostUpdate()
                 case EARTH:
                 {
                     currentScreen = ASTEROIDS;
+                    App->physics->gravity.x = 0.0f;
+                    App->physics->gravity.y = 0.0f;
                     break;
                 }
                 case ASTEROIDS:
@@ -123,6 +125,8 @@ update_status ModuleSceneIntro::PostUpdate()
                 case MOON:
                 {
                     currentScreen = ASTEROIDS;
+                    App->physics->gravity.x = 0.0f;
+                    App->physics->gravity.y = 0.0f;
                     break;
                 }
                 }

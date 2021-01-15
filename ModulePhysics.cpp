@@ -66,6 +66,16 @@ void ModulePhysics::UpdatePhysics(iPoint& pos, fPoint& speed, fPoint a, float dt
     speed.x = speed.x + (a.x * dt);
     pos.y = pos.y + speed.y * dt + ((gravity.y + a.y) * dt * dt * 0.5);
     speed.y = speed.y + ((gravity.y + a.y) * dt);
+
+    if (speed.y > 200.0f)
+        speed.y = 200.0f;
+    else if (speed.y < -200.0f)
+        speed.y = -200.0f;
+    if (speed.x > 200.0f)
+        speed.x = 200.0f;
+    else if (speed.x < -200.0f)
+        speed.x = -200.0f;
+    //LOG("pos: %d, %d acc: %f, %f", pos.x, pos.y, a.x, a.y);
 }
 
 void ModulePhysics::ResolveCollisions(iPoint& pos, iPoint nextPos, fPoint& speed, fPoint nextSpeed, int width, int height)

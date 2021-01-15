@@ -67,7 +67,7 @@ bool ModuleRender::CleanUp()
 }
 
 // Blit to screen
-bool ModuleRender::Blit(SDL_Texture* texture, int x, int y, bool fullscreen, SDL_Rect* section, float speed, double angle, int pivot_x, int pivot_y )
+bool ModuleRender::Blit(SDL_Texture* texture, int x, int y, bool fullscreen, double angle, SDL_Rect* section, float speed,  int pivot_x, int pivot_y )
 {
 	bool ret = true;
 	SDL_Rect rect;
