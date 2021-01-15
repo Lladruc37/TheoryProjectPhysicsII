@@ -35,7 +35,7 @@ bool ModuleAudio::Init()
 	}
 
 	//Initialize SDL_mixer
-	if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	if(Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 6, 2048) < 0)
 	{
 		LOG("SDL_mixer could not initialize! SDL_mixer Error: %s\n", Mix_GetError());
 		ret = false;
@@ -146,20 +146,25 @@ unsigned int ModuleAudio::LoadFx(const char* path)
 }
 
 // Play WAV
-bool ModuleAudio::PlayFx(unsigned int id, int repeat)
+int ModuleAudio::PlayFx(unsigned int id, int repeat)
 {
 	if(IsEnabled() == false)
-		return false;
-
-	bool ret = false;
+		return 0;
 
 	Mix_Chunk* chunk = NULL;
 	
 	if(fx.at(id-1, chunk) == true)
 	{
-		Mix_PlayChannel(-1, chunk, repeat);
-		ret = true;
+		if (id > 0 && id <= fx.count())
+		{
+			return Mix_PlayChannel(-1, chunk, repeat);
+		}
 	}
 
-	return ret;
+	return 0;
+}
+
+int ModuleAudio::StopFx(int channel)
+{
+	return Mix_HaltChannel(channel);
 }

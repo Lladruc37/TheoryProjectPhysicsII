@@ -19,6 +19,16 @@ bool ModulePlayer::Start()
     height = 137;
     position.x = 200;
     position.y = 100;
+    nextPos.x = position.x;
+    nextPos.y = position.y;
+
+    isMovingUp = false;
+    isMovingLeft = false;
+    isMovingRight = false;
+    isMovingDown = false;
+
+    movingFx = App->audio->LoadFx("Assets/Sound/Fx/ovni.wav");
+
 	return true;
 }
 
@@ -42,6 +52,20 @@ update_status ModulePlayer::PreUpdate()
         {
             totalForce.y = -1000.0f;
         }
+
+        if (!isMovingUp)
+        {
+            isMovingUp = true;
+            movingChannelOne = App->audio->PlayFx(movingFx, -1);
+        }
+    }
+    else
+    {
+        if (isMovingUp)
+        {
+            isMovingUp = false;
+            App->audio->StopFx(movingChannelOne);
+        }
     }
 
     if (App->input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT)
@@ -53,6 +77,20 @@ update_status ModulePlayer::PreUpdate()
         else
         {
             totalForce.x = -250.0f;
+        }
+
+        if (!isMovingLeft)
+        {
+            isMovingLeft = true;
+            movingChannelTwo = App->audio->PlayFx(movingFx, -1);
+        }
+    }
+    else
+    {
+        if (isMovingLeft)
+        {
+            isMovingLeft = false;
+            App->audio->StopFx(movingChannelTwo);
         }
     }
 
@@ -66,6 +104,20 @@ update_status ModulePlayer::PreUpdate()
         {
             totalForce.y = 250.0f;
         }
+
+        if (!isMovingRight)
+        {
+            isMovingRight = true;
+            movingChannelThree = App->audio->PlayFx(movingFx, -1);
+        }
+    }
+    else
+    {
+        if (isMovingRight)
+        {
+            isMovingRight = false;
+            App->audio->StopFx(movingChannelThree);
+        }
     }
 
     if (App->input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT)
@@ -77,6 +129,20 @@ update_status ModulePlayer::PreUpdate()
         else
         {
             totalForce.x = 250.0f;
+        }
+
+        if (!isMovingDown)
+        {
+            isMovingDown = true;
+            movingChannelFour = App->audio->PlayFx(movingFx, -1);
+        }
+    }
+    else
+    {
+        if (isMovingDown)
+        {
+            isMovingDown = false;
+            App->audio->StopFx(movingChannelFour);
         }
     }
 
@@ -105,13 +171,13 @@ update_status ModulePlayer::Update(float dt)
         speed.x = 0.0f;
         a.x = 0.0f;
     }
-    if (position.y <= 0)
+    if (position.y <= 0 && App->scene_intro->currentScreen == GameScreen::MOON)
     {
         position.y = 0;
         speed.y = 0.0f;
         a.y = 0.0f;
     }
-    if ((position.y + height) > (App->renderer->camera.h))
+    if ((position.y + height) > (App->renderer->camera.h) && App->scene_intro->currentScreen == GameScreen::EARTH)
     {
         position.y = App->renderer->camera.h - height;
         speed.y = 0.0f;

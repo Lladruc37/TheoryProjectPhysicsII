@@ -20,11 +20,14 @@ bool ModuleSceneIntro::Start()
     // TITLE SCREEN //
     currentScene = TITLE_SCREEN;
     backgroundTitle = App->textures->Load("Assets/Textures/TitleScreen.png");
-    //App->audio->PlayMusic("pinball/audio/music/TitleScreen.ogg", 0.0f);
+    App->audio->PlayMusic("Assets/Sound/title.ogg", 0.0f);
 
     // GAME //
-    startGame = true;
-    backgroundGame = App->textures->Load("Assets/Textures/BG.png");
+    startGame = false;
+    currentScreen = GameScreen::EARTH;
+    bgEarth = App->textures->Load("Assets/Textures/BG.png");
+    bgAsteroids = App->textures->Load("Assets/Textures/BG2.png");
+    bgMoon = App->textures->Load("Assets/Textures/BG3.png");
 
 	return ret;
 }
@@ -44,19 +47,12 @@ update_status ModuleSceneIntro::PreUpdate()
         case TITLE_SCREEN:
         {
             if (App->input->GetKey(SDL_SCANCODE_RETURN) == KEY_STATE::KEY_DOWN) {
-                currentScene = GAME;
-                //App->audio->PlayMusic("pinball/audio/music/silence.ogg");
+                startGame = true;
             }
             break;
         }
         case GAME:
         {
-            if (startGame)
-            {
-                App->player->Enable();
-                App->physics->Enable();
-                startGame = false;
-            }
             break;
         }
     }
@@ -85,12 +81,75 @@ update_status ModuleSceneIntro::PostUpdate()
     {
         case TITLE_SCREEN:
         {
+            if (startGame)
+            {
+                App->physics->Enable();
+                App->player->Enable();
+                currentScene = GAME;
+                startGame = false;
+            }
             App->renderer->Blit(backgroundTitle, 0, 0,true);
             break;
         }
         case GAME:
         {
-            App->renderer->Blit(backgroundGame, 0, 0, true);
+            if ((App->player->position.y + App->player->height / 2) <= 0)
+            {
+                App->player->position.y = App->renderer->camera.h - App->player->height / 2;
+                switch (currentScreen)
+                {
+                case EARTH:
+                {
+                    currentScreen = ASTEROIDS;
+                    break;
+                }
+                case ASTEROIDS:
+                {
+                    currentScreen = MOON;
+                    break;
+                }
+                }
+            }
+            else if (App->player->position.y >= App->renderer->camera.h)
+            {
+                App->player->position.y = 0;
+                switch (currentScreen)
+                {
+                case ASTEROIDS:
+                {
+                    currentScreen = EARTH;
+                    break;
+                }
+                case MOON:
+                {
+                    currentScreen = ASTEROIDS;
+                    break;
+                }
+                }
+            }
+
+            switch (currentScreen)
+            {
+            case EARTH:
+            {
+                App->renderer->Blit(bgEarth, 0, 0, true);
+                break;
+            }
+            case ASTEROIDS:
+            {
+                App->renderer->Blit(bgAsteroids, 0, 0, true);
+                break;
+            }
+            case MOON:
+            {
+                App->renderer->Blit(bgMoon, 0, 0, true);
+                break;
+            }
+            default:
+            {
+                break;
+            }
+            }
             break;
         }
     }

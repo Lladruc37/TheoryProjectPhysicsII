@@ -26,4 +26,14 @@ public:
     fPoint nextSpeed;
     fPoint totalForce;
     int mass;
+
+    bool isMovingUp;
+    bool isMovingLeft;
+    bool isMovingRight;
+    bool isMovingDown;
+    int movingFx;
+    int movingChannelOne;
+    int movingChannelTwo;
+    int movingChannelThree;
+    int movingChannelFour;
 };

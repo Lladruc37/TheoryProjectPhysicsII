@@ -7,8 +7,14 @@
 enum Scene
 {
     TITLE_SCREEN,
-    GAME,
-    GAME_OVER
+    GAME
+};
+
+enum GameScreen
+{
+    EARTH,
+    ASTEROIDS,
+    MOON
 };
 
 class ModuleSceneIntro : public Module
@@ -25,9 +31,12 @@ public:
 
 public:
     Scene currentScene = TITLE_SCREEN;
+    GameScreen currentScreen = EARTH;
 
     // GAME //
-    SDL_Texture* backgroundGame = nullptr;
+    SDL_Texture* bgEarth = nullptr;
+    SDL_Texture* bgAsteroids = nullptr;
+    SDL_Texture* bgMoon = nullptr;
     bool startGame = false;
 
     // TITLE SCREEN //
