@@ -31,6 +31,11 @@ struct Asteroid : public Object
     //Collider* collider = nullptr;
 };
 
+struct Moon : public Object
+{
+    int radius;
+};
+
 class ModuleSceneIntro : public Module
 {
 public:
@@ -45,6 +50,9 @@ public:
     void OnCollision(Collider* c1, Collider* c2);
 
     void CreateAsteroids();
+    void DeleteAsteroids();
+    void CreateMoon();
+    void DeleteMoon();
 
 public:
     Scene currentScene = TITLE_SCREEN;
@@ -60,6 +68,7 @@ public:
     Asteroid top;
     Asteroid mid[3];
     Asteroid bot[4];
+    Moon moon;
 
     // WIN/LOSE //
     SDL_Texture* gameOverTxt = nullptr;

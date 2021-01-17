@@ -129,6 +129,24 @@ update_status ModulePhysics::PreUpdate()
 
 update_status ModulePhysics::Update(float dt)
 {
+    switch (App->scene_intro->currentScreen)
+    {
+    case GameScreen::EARTH:
+        gravity.x = 0.0f;
+        gravity.y = 60.0f;
+        break;
+    case GameScreen::ASTEROIDS:
+        gravity.x = 0.0f;
+        gravity.y = 0.0f;
+        break;
+    case GameScreen::MOON:
+        gravity.x = 0.0f;
+        gravity.y = 0.0f;
+        break;
+    default:
+        break;
+    }
+
     p2List_item<Object*>* tmp = objects.getFirst();
     while (tmp != nullptr)
     {

@@ -148,16 +148,14 @@ update_status ModuleSceneIntro::PostUpdate()
                     case EARTH:
                     {
                         currentScreen = ASTEROIDS;
-                        App->physics->gravity.x = 0.0f;
-                        App->physics->gravity.y = 0.0f;
                         CreateAsteroids();
                         break;
                     }
                     case ASTEROIDS:
                     {
                         currentScreen = MOON;
-                        App->physics->gravity.x = 0.0f;
-                        App->physics->gravity.y = 0.0f;
+                        //DeleteAsteroids();
+                        CreateMoon();
                         break;
                     }
                 }
@@ -170,15 +168,13 @@ update_status ModuleSceneIntro::PostUpdate()
                     case ASTEROIDS:
                     {
                         currentScreen = EARTH;
-                        App->physics->gravity.x = 0.0f;
-                        App->physics->gravity.y = 60.0f;
+                        //DeleteAsteroids();
                         break;
                     }
                     case MOON:
                     {
                         currentScreen = ASTEROIDS;
-                        App->physics->gravity.x = 0.0f;
-                        App->physics->gravity.y = 0.0f;
+                        //DeleteMoon();
                         CreateAsteroids();
                         break;
                     }
@@ -218,6 +214,11 @@ update_status ModuleSceneIntro::PostUpdate()
                 case MOON:
                 {
                     App->renderer->Blit(bgMoon, 0, 0, true);
+
+                    if (App->physics->debug)
+                    {
+                        App->renderer->DrawQuad(moon.collider->rect, 255, 0, 0, 100);
+                    }
                     break;
                 }
             }
@@ -287,6 +288,34 @@ void ModuleSceneIntro::CreateAsteroids()
             bot[i].collider->SetPos(bot[i].pos.x, bot[i].pos.y, bot[i].width, bot[i].height);
         }
     }
+}
+
+void ModuleSceneIntro::DeleteAsteroids()
+{
+    App->physics->RemoveObject(&top);
+    for (int i = 0; i != 3; ++i)
+    {
+        App->physics->RemoveObject(&mid[i]);
+    }
+    for (int i = 0; i != 4; ++i)
+    {
+        App->physics->RemoveObject(&bot[i]);
+    }
+}
+
+void ModuleSceneIntro::CreateMoon()
+{
+    moon.mass = 1.0f;
+    moon.pos.x = 461;
+    moon.pos.y = 245;
+    moon.radius = 186;
+    moon.collider = new Collider({ moon.pos.x,moon.pos.x,moon.radius*2,moon.radius*2 }, Collider::Type::MOON, this);
+    App->physics->AddObject(&moon);
+}
+
+void ModuleSceneIntro::DeleteMoon()
+{
+    App->physics->RemoveObject(&moon);
 }
 
 void ModuleSceneIntro::OnCollision(Collider* c1, Collider* c2) {}
