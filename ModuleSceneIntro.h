@@ -6,6 +6,7 @@
 
 class Collider;
 struct Object;
+struct Circle;
 
 enum Scene
 {
@@ -18,22 +19,6 @@ enum GameScreen
     EARTH,
     ASTEROIDS,
     MOON
-};
-
-struct Asteroid : public Object
-{
-    //iPoint pos;
-    int width;
-    int height;
-    float angle;
-    //fPoint speed;
-    //int mass;
-    //Collider* collider = nullptr;
-};
-
-struct Moon : public Object
-{
-    int radius;
 };
 
 class ModuleSceneIntro : public Module
@@ -65,10 +50,10 @@ public:
     bool startGame = false;
 
     SDL_Texture* asteroidTxt = nullptr;
-    Asteroid top;
-    Asteroid mid[3];
-    Asteroid bot[4];
-    Moon moon;
+    Object top;
+    Object mid[3];
+    Object bot[4];
+    Circle moon;
 
     // WIN/LOSE //
     SDL_Texture* gameOverTxt = nullptr;

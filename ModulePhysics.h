@@ -28,9 +28,6 @@ public:
 	// Sets the position of the construct
 	void SetPos(int x, int y, int w, int h);
 
-	// Checks if two rects are intersecting
-	bool Intersects(const SDL_Rect& r) const;
-
 	SDL_Rect rect;
 	bool pendingToDelete = false;
 	Type type;
@@ -39,11 +36,30 @@ public:
 
 struct Object
 {
+	enum Shape
+	{
+		RECT = 0,
+		CIRCLE
+	};
+
+	Object(iPoint pos, fPoint speed, fPoint force, float mass = 0.0f, Shape shape = Shape::RECT, Collider* c = nullptr, float angle = 0.0f) : pos(pos), speed(speed), force(force), mass(mass), shape(shape), collider(c), angle(angle)
+	{}
+
+	Object()
+	{}
+
 	iPoint pos;
 	fPoint speed;
 	fPoint force;
 	float mass;
+	Shape shape;
 	Collider* collider;
+	float angle;
+};
+
+struct Circle : public Object
+{
+	int radius;
 };
 
 class ModulePhysics : public Module
@@ -68,6 +84,11 @@ public:
 
 private:
 	fPoint Force2Accel(fPoint force, int mass);
+	void UpdateGravity();
+
+	// Checks if two rects are intersecting
+	//bool Intersects(const SDL_Rect& r) const;
+	bool Intersects(Object* A, Object* B) const;
 
 public:
 	fPoint gravity;

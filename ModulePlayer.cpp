@@ -3,8 +3,7 @@
 #include "ModulePlayer.h"
 
 ModulePlayer::ModulePlayer(Application* app, bool start_enabled) : Module(app, start_enabled)
-{
-}
+{}
 
 ModulePlayer::~ModulePlayer()
 {}
@@ -326,6 +325,13 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
             {
                 isDestroyed = true;
                 App->audio->PlayFx(explosionFx);
+            }
+        }
+        if (App->scene_intro->currentScreen == GameScreen::MOON)
+        {
+            if (c2->type == Collider::Type::MOON)
+            {
+                LOG("YAY");
             }
         }
     }
