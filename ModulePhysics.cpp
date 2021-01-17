@@ -52,8 +52,7 @@ ModulePhysics::ModulePhysics(Application* app, bool start_enabled) : Module(app,
 
 // Destructor
 ModulePhysics::~ModulePhysics()
-{
-}
+{}
 
 bool ModulePhysics::Start()
 {
@@ -90,6 +89,7 @@ update_status ModulePhysics::PreUpdate()
         // skip empty colliders
         if (tmp->data->collider == nullptr)
         {
+            tmp = tmp->next;
             continue;
         }
 
@@ -102,6 +102,7 @@ update_status ModulePhysics::PreUpdate()
             // skip empty colliders
             if (tmp2->data->collider == nullptr)
             {
+                tmp2 = tmp2->next;
                 continue;
             }
 
@@ -155,24 +156,8 @@ bool ModulePhysics::CleanUp()
 {
     LOG("Freeing all colliders");
 
-    p2List_item<Object*>* tmp = objects.getFirst();
-    while (tmp != nullptr)
-    {
-        p2List_item<Object*>* tmpNext = tmp->next;
-        delete tmp->data->collider;
-        tmp->data->collider = nullptr;
-        delete tmp;
-        tmp = tmpNext;
-    }
+    objects.clear();
 
-    //for (uint i = 0; i < MAX_COLLIDERS; ++i)
-    //{
-    //    if (colliders[i] != nullptr)
-    //    {
-    //        delete colliders[i];
-    //        colliders[i] = nullptr;
-    //    }
-    //}
 	return true;
 }
 
