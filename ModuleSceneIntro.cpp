@@ -33,56 +33,6 @@ bool ModuleSceneIntro::Start()
     srand(time(NULL));
     asteroidTxt = App->textures->Load("Assets/Textures/Asteroid.png");
 
-    top.width = top.height = 70;
-    top.pos.x = -top.width;
-    top.pos.y = 135;
-    top.angle = (float)(rand() % 360);
-    top.speed.x = 550.0f;
-    top.mass = 3;
-    if (top.collider == nullptr)
-    {
-        top.collider = App->physics->AddCollider({ top.pos.x,top.pos.y,top.width,top.height }, Collider::Type::ASTEROID, this);
-    }
-    else
-    {
-        top.collider->SetPos(top.pos.x, top.pos.y, top.width, top.height);
-    }
-
-    for (int i = 0; i != 3; ++i)
-    {
-        mid[i].width = mid[i].height = 70;
-        mid[i].pos.x = App->renderer->camera.w + mid[i].width - (i * 350);
-        mid[i].pos.y = 375;
-        mid[i].angle = (float)(rand() % 360);
-        mid[i].speed.x = -300.0f;
-        mid[i].mass = 3;
-        if (mid[i].collider == nullptr)
-        {
-            mid[i].collider = App->physics->AddCollider({ mid[i].pos.x,mid[i].pos.y,mid[i].width,mid[i].height }, Collider::Type::ASTEROID, this);
-        }
-        else
-        {
-            mid[i].collider->SetPos(mid[i].pos.x, mid[i].pos.y, mid[i].width, mid[i].height);
-        }
-    }
-
-    for (int i = 0; i != 4; ++i)
-    {
-        bot[i].width = bot[i].height = 70;
-        bot[i].pos.x = bot[i].width + (i * 262);
-        bot[i].pos.y = 615;
-        bot[i].angle = (float)(rand() % 360);
-        bot[i].speed.x = 165.0f;
-        bot[i].mass = 3;
-        if (bot[i].collider == nullptr)
-        {
-            bot[i].collider = App->physics->AddCollider({ bot[i].pos.x,bot[i].pos.y,bot[i].width,bot[i].height }, Collider::Type::ASTEROID, this);
-        }
-        else
-        {
-            bot[i].collider->SetPos(bot[i].pos.x, bot[i].pos.y, bot[i].width, bot[i].height);
-        }
-    }
     // WIN/LOSE //
     gameOverTxt = App->textures->Load("Assets/Textures/GameOver.png");
 
@@ -134,10 +84,11 @@ update_status ModuleSceneIntro::Update(float dt)
         {
             if (currentScreen == ASTEROIDS)
             {
-                fPoint a;
-                a.x = 0;
-                a.y = 0;
-                App->physics->UpdatePhysics(top.pos, top.speed, a, dt);
+                //fPoint a;
+                //a.x = 0;
+                //a.y = 0;
+                //App->physics->UpdatePhysics(top.pos, top.speed, a, dt);
+                //App->physics->UpdatePhysics(&top, dt);
                 if (top.pos.x >= App->renderer->camera.w + top.width)
                     top.pos.x = 0 - top.width;
                 top.collider->SetPos(top.pos.x, top.pos.y, top.width, top.height);
@@ -145,7 +96,8 @@ update_status ModuleSceneIntro::Update(float dt)
 
                 for (int i = 0; i != 3; ++i)
                 {
-                    App->physics->UpdatePhysics(mid[i].pos, mid[i].speed, a, dt);
+                    //App->physics->UpdatePhysics(mid[i].pos, mid[i].speed, a, dt);
+                    //App->physics->UpdatePhysics(&mid[i], dt);
                     if (mid[i].pos.x <= 0 - mid[i].width)
                         mid[i].pos.x = App->renderer->camera.w + mid[i].width;
                     mid[i].collider->SetPos(mid[i].pos.x, mid[i].pos.y, mid[i].width, mid[i].height);
@@ -155,7 +107,8 @@ update_status ModuleSceneIntro::Update(float dt)
                 for (int i = 0; i != 4; ++i)
                 {
                     //LOG("SpeedAsteroidX%d = %f",i, bot[i].speed.x);               Theres a bug with a strange increase of speed when asteroids are tpd
-                    App->physics->UpdatePhysics(bot[i].pos, bot[i].speed, a, dt);
+                    //App->physics->UpdatePhysics(bot[i].pos, bot[i].speed, a, dt);
+                    //App->physics->UpdatePhysics(&bot[i], dt);
                     if (bot[i].pos.x >= App->renderer->camera.w + bot[i].width)
                         bot[i].pos.x = 0 - bot[i].width;
                     bot[i].collider->SetPos(bot[i].pos.x, bot[i].pos.y, bot[i].width, bot[i].height);
@@ -187,16 +140,17 @@ update_status ModuleSceneIntro::PostUpdate()
         }
         case GAME:
         {
-            if ((App->player->position.y + App->player->height / 2) <= 0)
+            if ((App->player->player.pos.y + App->player->height / 2) <= 0)
             {
-                App->player->position.y = App->renderer->camera.h - App->player->height / 2;
+                App->player->player.pos.y = App->renderer->camera.h - App->player->height / 2;
                 switch (currentScreen)
                 {
                     case EARTH:
                     {
                         currentScreen = ASTEROIDS;
                         App->physics->gravity.x = 0.0f;
-                        App->physics->gravity.y = 00.0f;
+                        App->physics->gravity.y = 0.0f;
+                        CreateAsteroids();
                         break;
                     }
                     case ASTEROIDS:
@@ -208,9 +162,9 @@ update_status ModuleSceneIntro::PostUpdate()
                     }
                 }
             }
-            else if (App->player->position.y >= App->renderer->camera.h)
+            else if (App->player->player.pos.y >= App->renderer->camera.h)
             {
-                App->player->position.y = 0;
+                App->player->player.pos.y = 0;
                 switch (currentScreen)
                 {
                     case ASTEROIDS:
@@ -225,6 +179,7 @@ update_status ModuleSceneIntro::PostUpdate()
                         currentScreen = ASTEROIDS;
                         App->physics->gravity.x = 0.0f;
                         App->physics->gravity.y = 0.0f;
+                        CreateAsteroids();
                         break;
                     }
                 }
@@ -275,6 +230,63 @@ update_status ModuleSceneIntro::PostUpdate()
         }
     }
     return UPDATE_CONTINUE;
+}
+
+void ModuleSceneIntro::CreateAsteroids()
+{
+    top.width = top.height = 70;
+    top.pos.x = -top.width;
+    top.pos.y = 135;
+    top.angle = (float)(rand() % 360);
+    top.speed.x = 550.0f;
+    top.mass = 3;
+    if (top.collider == nullptr)
+    {
+        top.collider = new Collider({ top.pos.x,top.pos.y,top.width,top.height }, Collider::Type::ASTEROID, this);
+        App->physics->AddObject(&top);
+    }
+    else
+    {
+        top.collider->SetPos(top.pos.x, top.pos.y, top.width, top.height);
+    }
+
+    for (int i = 0; i != 3; ++i)
+    {
+        mid[i].width = mid[i].height = 70;
+        mid[i].pos.x = App->renderer->camera.w + mid[i].width - (i * 350);
+        mid[i].pos.y = 375;
+        mid[i].angle = (float)(rand() % 360);
+        mid[i].speed.x = -300.0f;
+        mid[i].mass = 3;
+        if (mid[i].collider == nullptr)
+        {
+            mid[i].collider = new Collider({ mid[i].pos.x,mid[i].pos.y,mid[i].width,mid[i].height }, Collider::Type::ASTEROID, this);
+            App->physics->AddObject(&mid[i]);
+        }
+        else
+        {
+            mid[i].collider->SetPos(mid[i].pos.x, mid[i].pos.y, mid[i].width, mid[i].height);
+        }
+    }
+
+    for (int i = 0; i != 4; ++i)
+    {
+        bot[i].width = bot[i].height = 70;
+        bot[i].pos.x = bot[i].width + (i * 262);
+        bot[i].pos.y = 615;
+        bot[i].angle = (float)(rand() % 360);
+        bot[i].speed.x = 165.0f;
+        bot[i].mass = 3;
+        if (bot[i].collider == nullptr)
+        {
+            bot[i].collider = new Collider({ bot[i].pos.x,bot[i].pos.y,bot[i].width,bot[i].height }, Collider::Type::ASTEROID, this);
+            App->physics->AddObject(&bot[i]);
+        }
+        else
+        {
+            bot[i].collider->SetPos(bot[i].pos.x, bot[i].pos.y, bot[i].width, bot[i].height);
+        }
+    }
 }
 
 void ModuleSceneIntro::OnCollision(Collider* c1, Collider* c2) {}

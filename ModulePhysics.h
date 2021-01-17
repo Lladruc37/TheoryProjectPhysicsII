@@ -37,6 +37,15 @@ public:
 	Module* listener = nullptr;
 };
 
+struct Object
+{
+	iPoint pos;
+	fPoint speed;
+	fPoint force;
+	float mass;
+	Collider* collider;
+};
+
 class ModulePhysics : public Module
 {
 public:
@@ -49,19 +58,25 @@ public:
 	update_status PostUpdate();
 	bool CleanUp();
 
-    fPoint Force2Accel(fPoint force, int mass);
-    void UpdatePhysics(iPoint& pos, fPoint& speed, fPoint acceleration, float dt);
-    void ResolveCollisions(iPoint& pos, iPoint nextPos, fPoint& speed, fPoint nextSpeed, int width, int height); // Requires Raycast for the future
+    void UpdatePhysics(Object* object, float dt);
+    void ResolveCollisions(Object* object, iPoint pastPos, fPoint pastSpeed, int width, int height); // Requires Raycast for the future
 
 	// Adds a new collider to the list
-	Collider* AddCollider(SDL_Rect rect, Collider::Type type, Module* listener = nullptr);
+	//Collider* AddCollider(SDL_Rect rect, Collider::Type type, Module* listener = nullptr);
+	void AddObject(Object* object);
+	void RemoveObject(Object* object);
+
+private:
+	fPoint Force2Accel(fPoint force, int mass);
 
 public:
 	fPoint gravity;
 	bool debug;
+
 private:
 	// All existing colliders in the scene
-	Collider* colliders[MAX_COLLIDERS] = { nullptr };
+	//Collider* colliders[MAX_COLLIDERS] = { nullptr };
+	p2List<Object*> objects;
 
 	// The collision matrix. Defines the interaction for two collider types
 	// If set to false, collider 1 will ignore collider 2

@@ -5,6 +5,7 @@
 #include "Globals.h"
 
 class Collider;
+struct Object;
 
 enum Scene
 {
@@ -19,15 +20,15 @@ enum GameScreen
     MOON
 };
 
-struct Asteroid
+struct Asteroid : public Object
 {
-    iPoint pos;
+    //iPoint pos;
     int width;
     int height;
     float angle;
-    fPoint speed;
-    int mass;
-    Collider* collider = nullptr;
+    //fPoint speed;
+    //int mass;
+    //Collider* collider = nullptr;
 };
 
 class ModuleSceneIntro : public Module
@@ -42,6 +43,8 @@ public:
     update_status PostUpdate();
 	bool CleanUp();
     void OnCollision(Collider* c1, Collider* c2);
+
+    void CreateAsteroids();
 
 public:
     Scene currentScene = TITLE_SCREEN;

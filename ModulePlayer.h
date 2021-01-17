@@ -3,8 +3,10 @@
 #include "Animation.h"
 #include "Globals.h"
 #include "p2Point.h"
+#include "ModulePhysics.h"
 
 class Collider;
+struct Object;
 
 class ModulePlayer : public Module
 {
@@ -20,21 +22,24 @@ public:
     void OnCollision(Collider* c1, Collider* c2);
 
 public:
-    SDL_Texture* player;
+    SDL_Texture* playerTex;
     SDL_Texture* explosion;
     Animation explosionAnim;
     float dtAnim;
-    Collider* collider = nullptr;
+    //Collider* collider = nullptr;
 
-    iPoint position;
-    iPoint nextPos;
+    Object player;
+    //iPoint position;
+    //iPoint nextPos;
+    iPoint pastPos;
     int width;
     int height;
     float angle;
-    fPoint speed;
-    fPoint nextSpeed;
-    fPoint totalForce;
-    int mass;
+    //fPoint speed;
+    //fPoint nextSpeed;
+    fPoint pastSpeed;
+    //fPoint totalForce;
+    //int mass;
     bool isDestroyed;
 
     bool isMovingUp;

@@ -6,10 +6,6 @@
 ModulePhysics::ModulePhysics(Application* app, bool start_enabled) : Module(app, start_enabled)
 {
 	debug = true;
-    for (uint i = 0; i < MAX_COLLIDERS; ++i)
-    {
-        colliders[i] = nullptr;
-    }
 
     matrix[Collider::Type::SPACE][Collider::Type::SPACE] = false;
     matrix[Collider::Type::SPACE][Collider::Type::SOLID] = false;
@@ -52,7 +48,6 @@ ModulePhysics::ModulePhysics(Application* app, bool start_enabled) : Module(app,
     matrix[Collider::Type::ASTEROID][Collider::Type::MOON] = false;
     matrix[Collider::Type::ASTEROID][Collider::Type::PLAYER] = true;
     matrix[Collider::Type::ASTEROID][Collider::Type::ASTEROID] = false;
-
 }
 
 // Destructor
@@ -72,39 +67,45 @@ bool ModulePhysics::Start()
 update_status ModulePhysics::PreUpdate()
 {
     // Delete colliders scheduled for deletion
-    for (uint i = 0; i < MAX_COLLIDERS; ++i)
+    p2List_item<Object*>* tmp = objects.getFirst();
+    while (tmp != nullptr)
     {
-        if (colliders[i] != nullptr && colliders[i]->pendingToDelete == true)
+        if (tmp->data->collider != nullptr && tmp->data->collider->pendingToDelete == true)
         {
-            delete colliders[i];
-            colliders[i] = nullptr;
+            delete tmp->data->collider;
+            tmp->data->collider = nullptr;
         }
+
+        tmp = tmp->next;
     }
+
 
     Collider* c1;
     Collider* c2;
 
     // Check collisions
-    for (uint i = 0; i < MAX_COLLIDERS; ++i)
+    tmp = objects.getFirst();
+    while(tmp != nullptr)
     {
         // skip empty colliders
-        if (colliders[i] == nullptr)
+        if (tmp->data->collider == nullptr)
         {
             continue;
         }
 
-        c1 = colliders[i];
+        c1 = tmp->data->collider;
 
         // avoid checking collisions already checked
-        for (uint k = i + 1; k < MAX_COLLIDERS; ++k)
+        p2List_item<Object*>* tmp2 = tmp->next;
+        while(tmp2 != nullptr)
         {
             // skip empty colliders
-            if (colliders[k] == nullptr)
+            if (tmp2->data->collider == nullptr)
             {
                 continue;
             }
 
-            c2 = colliders[k];
+            c2 = tmp2->data->collider;
 
             if (c1->Intersects(c2->rect) && matrix[c1->type][c2->type])
             {
@@ -117,7 +118,9 @@ update_status ModulePhysics::PreUpdate()
                     c2->listener->OnCollision(c2, c1);
                 }
             }
+            tmp2 = tmp2->next;
         }
+        tmp = tmp->next;
     }
 
 	return UPDATE_CONTINUE;
@@ -125,6 +128,15 @@ update_status ModulePhysics::PreUpdate()
 
 update_status ModulePhysics::Update(float dt)
 {
+    p2List_item<Object*>* tmp = objects.getFirst();
+    while (tmp != nullptr)
+    {
+        if (tmp->data->mass != 0.0f)
+        {
+            UpdatePhysics(tmp->data, dt);
+        }
+        tmp = tmp->next;
+    }
     return UPDATE_CONTINUE;
 }
 
@@ -143,14 +155,24 @@ bool ModulePhysics::CleanUp()
 {
     LOG("Freeing all colliders");
 
-    for (uint i = 0; i < MAX_COLLIDERS; ++i)
+    p2List_item<Object*>* tmp = objects.getFirst();
+    while (tmp != nullptr)
     {
-        if (colliders[i] != nullptr)
-        {
-            delete colliders[i];
-            colliders[i] = nullptr;
-        }
+        p2List_item<Object*>* tmpNext = tmp->next;
+        delete tmp->data->collider;
+        tmp->data->collider = nullptr;
+        delete tmp;
+        tmp = tmpNext;
     }
+
+    //for (uint i = 0; i < MAX_COLLIDERS; ++i)
+    //{
+    //    if (colliders[i] != nullptr)
+    //    {
+    //        delete colliders[i];
+    //        colliders[i] = nullptr;
+    //    }
+    //}
 	return true;
 }
 
@@ -162,18 +184,21 @@ fPoint ModulePhysics::Force2Accel(fPoint force, int mass)
     return a;
 }
 
-void ModulePhysics::UpdatePhysics(iPoint& pos, fPoint& speed, fPoint a, float dt)
+void ModulePhysics::UpdatePhysics(Object* object, float dt)
 {
+    fPoint a = Force2Accel(object->force, object->mass);
     // verlet
-    pos.x = pos.x + speed.x * dt + (a.x * dt * dt * 0.5);
-    speed.x = speed.x + (a.x * dt);
-    pos.y = pos.y + speed.y * dt + ((gravity.y + a.y) * dt * dt * 0.5);
-    speed.y = speed.y + ((gravity.y + a.y) * dt);
+    object->pos.x = object->pos.x + object->speed.x * dt + (a.x * dt * dt * 0.5);
+    object->speed.x = object->speed.x + (a.x * dt);
+    object->pos.y = object->pos.y + object->speed.y * dt + ((gravity.y + a.y) * dt * dt * 0.5);
+    object->speed.y = object->speed.y + ((gravity.y + a.y) * dt);
 
+    object->force.x = 0.0f;
+    object->force.y = 0.0f;
     //LOG("pos: %d, %d acc: %f, %f", pos.x, pos.y, a.x, a.y);
 }
 
-void ModulePhysics::ResolveCollisions(iPoint& pos, iPoint nextPos, fPoint& speed, fPoint nextSpeed, int width, int height)
+void ModulePhysics::ResolveCollisions(Object* object, iPoint pastPos, fPoint pastSpeed, int width, int height)
 {
     //if ((nextPos.x + width) > App->renderer->camera.x + App->renderer->camera.w)
     //{
@@ -187,27 +212,34 @@ void ModulePhysics::ResolveCollisions(iPoint& pos, iPoint nextPos, fPoint& speed
 
 
 
-    LOG("pos: %d, %d speed: %f, %f", nextPos.x, nextPos.y, nextSpeed.x, nextSpeed.y);
-    pos.x = nextPos.x;
-    pos.y = nextPos.y;
-    speed.x = nextSpeed.x;
-    speed.y = nextSpeed.y;
+    LOG("pos: %d, %d speed: %f, %f", object->pos.x, object->pos.y, object->speed.x, object->speed.y);
 }
 
-Collider* ModulePhysics::AddCollider(SDL_Rect rect, Collider::Type type, Module* listener)
-{
-    Collider* ret = nullptr;
-    // Adds the collider in the first null spot on the array
-    for (uint i = 0; i < MAX_COLLIDERS; ++i)
-    {
-        if (colliders[i] == nullptr)
-        {
-            ret = colliders[i] = new Collider(rect, type, listener);
-            break;
-        }
-    }
+//Collider* ModulePhysics::AddCollider(SDL_Rect rect, Collider::Type type, Module* listener)
+//{
+//    Collider* ret = nullptr;
+//    // Adds the collider in the first null spot on the array
+//    for (uint i = 0; i < MAX_COLLIDERS; ++i)
+//    {
+//        if (colliders[i] == nullptr)
+//        {
+//            ret = colliders[i] = new Collider(rect, type, listener);
+//            break;
+//        }
+//    }
+//
+//    return ret;
+//}
 
-    return ret;
+void ModulePhysics::AddObject(Object* object)
+{
+    objects.add(object);
+}
+
+void ModulePhysics::RemoveObject(Object* object)
+{
+    p2List_item<Object*>* tmp = objects.findNode(object);
+    objects.del(tmp);
 }
 
 void Collider::SetPos(int x, int y, int w, int h)

@@ -13,9 +13,9 @@ ModulePlayer::~ModulePlayer()
 bool ModulePlayer::Start()
 {
 	LOG("Loading player");
-    player = App->textures->Load("Assets/Textures/Rocket.png");
+    playerTex = App->textures->Load("Assets/Textures/Rocket.png");
     explosion = App->textures->Load("Assets/Textures/Explosion.png");
-    explosionAnim.totalFrames = 0;
+    //explosionAnim.totalFrames = 0;
     for (int i = 0; i != 10; ++i)
     {
         explosionAnim.PushBack({ i * 202,0,202,202 });
@@ -24,20 +24,22 @@ bool ModulePlayer::Start()
     explosionAnim.speed = 15.0f;
     explosionAnim.Reset();
 
-    mass = 2;
+    player.mass = 2;
     width = 120;
     height = 56;
     angle = 0.0f;
-    position.x = 200;
-    position.y = 100;
-    nextPos.x = position.x;
-    nextPos.y = position.y;
-    totalForce.SetToZero();
+    player.pos.x = 200;
+    player.pos.y = 100;
+    pastPos.x = player.pos.x;
+    pastPos.y = player.pos.y;
+    player.force.SetToZero();
 
-    if (collider == nullptr)
+    if (player.collider == nullptr)
     {
-        collider = App->physics->AddCollider({ position.x,position.y,width,height }, Collider::Type::PLAYER, this);
+        player.collider = new Collider({ player.pos.x,player.pos.y,width,height }, Collider::Type::PLAYER, this);
     }
+
+    App->physics->AddObject(&player);
 
     isMovingUp = false;
     isMovingLeft = false;
@@ -56,7 +58,7 @@ bool ModulePlayer::CleanUp()
 {
 	LOG("Unloading player");
 
-    App->textures->Unload(player);
+    App->textures->Unload(playerTex);
     App->textures->Unload(explosion);
     App->audio->UnloadFx(movingFx);
     App->audio->UnloadFx(explosionFx);
@@ -66,8 +68,6 @@ bool ModulePlayer::CleanUp()
 
 update_status ModulePlayer::PreUpdate()
 {
-    totalForce.x = 0;
-    totalForce.y = 0;
     if (App->input->GetKey(SDL_SCANCODE_F11) == KEY_DOWN)
     {
         isDestroyed = true;
@@ -88,7 +88,7 @@ update_status ModulePlayer::PreUpdate()
         {
             //if ((position.y + height) > (App->renderer->camera.h))
             //{
-            totalForce.y = -1000.0f;
+            player.force.y = -1000.0f;
             //}
             //else
             /*{
@@ -118,7 +118,7 @@ update_status ModulePlayer::PreUpdate()
             }
             else
             {*/
-            totalForce.x = -1000.0f;
+            player.force.x = -1000.0f;
             //}
 
             if (!isMovingLeft)
@@ -140,7 +140,7 @@ update_status ModulePlayer::PreUpdate()
         {
             //if (position.y <= 0)
             //{
-            totalForce.y = 1000.0f;
+            player.force.y = 1000.0f;
             //}
             /*else
             {
@@ -170,7 +170,7 @@ update_status ModulePlayer::PreUpdate()
             }
             else
             {*/
-            totalForce.x = 1000.0f;
+            player.force.x = 1000.0f;
             //}
 
             if (!isMovingDown)
@@ -192,20 +192,20 @@ update_status ModulePlayer::PreUpdate()
     {
         if (App->input->GetKey(SDL_SCANCODE_R) == KEY_DOWN)
         {
-            position.x = 200;
-            position.y = 100;
-            nextPos.x = position.x;
-            nextPos.y = position.y;
-            totalForce.SetToZero();
+            player.pos.x = 200;
+            player.pos.y = 100;
+            pastPos.x = player.pos.x;
+            pastPos.y = player.pos.y;
+            player.force.SetToZero();
             isMovingUp = false;
             isMovingLeft = false;
             isMovingRight = false;
             isMovingDown = false;
             isDestroyed = false;
             explosionAnim.Reset();
-            if (collider == nullptr)
+            if (player.collider == nullptr)
             {
-                collider = App->physics->AddCollider({ position.x,position.y,width,height }, Collider::Type::PLAYER, this);
+                player.collider = new Collider({ player.pos.x,player.pos.y,width,height }, Collider::Type::PLAYER, this);
             }
             App->scene_intro->currentScreen = GameScreen::EARTH;
         }
@@ -220,58 +220,67 @@ update_status ModulePlayer::Update(float dt)
     dtAnim = dt;
     if (!isDestroyed)
     {
+        /*
         nextPos = position;
         nextSpeed = speed;
         fPoint a = App->physics->Force2Accel(totalForce, mass);
         App->physics->UpdatePhysics(nextPos, nextSpeed, a, dt);
         App->physics->ResolveCollisions(position, nextPos, speed, nextSpeed, width, height);
         collider->SetPos(position.x, position.y, width, height);
+        */
+        pastPos = player.pos;
+        pastSpeed = player.speed;
+        //App->physics->UpdatePhysics(&player, dt);
+        App->physics->ResolveCollisions(&player, pastPos, pastSpeed, width, height);
+        player.collider->SetPos(player.pos.x, player.pos.y, width, height);
 
-        // Car boundries
-        if (position.x <= 0) //Left bound
+        // Player boundries
+        if (player.pos.x <= 0) //Left bound
         {
-            position.x = 1;
+            player.pos.x = 1;
             //speed.x = 0.0f;
-            a.x = 0.0f;
+            //a.x = 0.0f;
         }
-        if ((position.x + width) > (App->renderer->camera.w)) //Right bound
+        if ((player.pos.x + width) > (App->renderer->camera.w)) //Right bound
         {
-            position.x = App->renderer->camera.w - width - 1;
+            player.pos.x = App->renderer->camera.w - width - 1;
             //speed.x = 0.0f;
-            a.x = 0.0f;
+            //a.x = 0.0f;
         }
-        if (position.y <= 0 && App->scene_intro->currentScreen == GameScreen::MOON) //Up bound
+        if (player.pos.y <= 0 && App->scene_intro->currentScreen == GameScreen::MOON) //Up bound
         {
-            position.y = 1;
+            player.pos.y = 1;
             //speed.y = 0.0f;
-            a.y = 0.0f;
+            //a.y = 0.0f;
         }
-        if ((position.y + height) > (App->renderer->camera.h) && App->scene_intro->currentScreen == GameScreen::EARTH) //Bottom bound
+        if ((player.pos.y + height) > (App->renderer->camera.h) && App->scene_intro->currentScreen == GameScreen::EARTH) //Bottom bound
         {
-            position.y = App->renderer->camera.h - height - 1;
+            player.pos.y = App->renderer->camera.h - height - 1;
             //speed.y = 0.0f;
-            a.y = 0.0f;
+            //a.y = 0.0f;
         }
 
-        if (speed.y > 200.0f)
-            speed.y = 200.0f;
-        else if (speed.y < -200.0f)
-            speed.y = -200.0f;
-        if (speed.x > 200.0f)
-            speed.x = 200.0f;
-        else if (speed.x < -200.0f)
-            speed.x = -200.0f;
+        if (player.speed.y > 200.0f)
+            player.speed.y = 200.0f;
+        else if (player.speed.y < -200.0f)
+            player.speed.y = -200.0f;
+        if (player.speed.x > 200.0f)
+            player.speed.x = 200.0f;
+        else if (player.speed.x < -200.0f)
+            player.speed.x = -200.0f;
     }
     else
     {
         if (isDestroyed)
         {
-            if (collider != nullptr)
+            if (player.collider != nullptr)
             {
-                collider->pendingToDelete = true;
-                collider = nullptr;
+                player.collider->pendingToDelete = true;
+                player.collider = nullptr;
             }
             explosionAnim.Update(dt);
+            player.speed.x = 0.0f;
+            player.speed.y = 0.0f;
         }
         /*else                  Victory
         {
@@ -288,15 +297,15 @@ update_status ModulePlayer::PostUpdate()
     if (isDestroyed)
     {
         if(!explosionAnim.HasFinished())
-        App->renderer->Blit(explosion, position.x - 41, position.y - 73, false, 0, &explosionAnim.GetCurrentFrame());
+        App->renderer->Blit(explosion, player.pos.x - 41, player.pos.y - 73, false, 0, &explosionAnim.GetCurrentFrame());
     }
     else
     {
-        App->renderer->Blit(player, position.x, position.y, false, (double)angle);
+        App->renderer->Blit(playerTex, player.pos.x, player.pos.y, false, (double)angle);
     }
     
-    if (App->physics->debug && collider != nullptr)
-        App->renderer->DrawQuad(collider->rect, 0, 255, 0, 100);
+    if (App->physics->debug && player.collider != nullptr)
+        App->renderer->DrawQuad(player.collider->rect, 0, 255, 0, 100);
 
     return UPDATE_CONTINUE;
 };
@@ -305,7 +314,7 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
 {
     if (App->scene_intro->currentScreen == GameScreen::ASTEROIDS)
     {
-        if (c1->type == Collider::Type::ASTEROID || c2->type == Collider::Type::ASTEROID)   //Rn like this cause im not sure which is which
+        if (c2->type == Collider::Type::ASTEROID)
         {
             isDestroyed = true;
             App->audio->PlayFx(explosionFx);
