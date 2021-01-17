@@ -73,6 +73,11 @@ update_status ModulePlayer::PreUpdate()
         isDestroyed = true;
         App->audio->PlayFx(explosionFx);
     }
+    if (App->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN)
+    {
+        godMode = !godMode;
+    }
+
 
     if (!isDestroyed)
     {
@@ -278,6 +283,7 @@ update_status ModulePlayer::Update(float dt)
                 player.collider->pendingToDelete = true;
                 player.collider = nullptr;
             }
+            App->scene_intro->DeleteAsteroids();
             explosionAnim.Update(dt);
             player.speed.x = 0.0f;
             player.speed.y = 0.0f;
@@ -312,12 +318,15 @@ update_status ModulePlayer::PostUpdate()
 
 void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
 {
-    if (App->scene_intro->currentScreen == GameScreen::ASTEROIDS)
+    if (!godMode)
     {
-        if (c2->type == Collider::Type::ASTEROID)
+        if (App->scene_intro->currentScreen == GameScreen::ASTEROIDS)
         {
-            isDestroyed = true;
-            App->audio->PlayFx(explosionFx);
+            if (c2->type == Collider::Type::ASTEROID)
+            {
+                isDestroyed = true;
+                App->audio->PlayFx(explosionFx);
+            }
         }
     }
 }

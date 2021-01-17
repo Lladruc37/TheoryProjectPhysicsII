@@ -41,6 +41,7 @@ public:
     //fPoint totalForce;
     //int mass;
     bool isDestroyed;
+    bool godMode;
 
     bool isMovingUp;
     bool isMovingLeft;

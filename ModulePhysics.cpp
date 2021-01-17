@@ -58,7 +58,7 @@ bool ModulePhysics::Start()
 {
 	LOG("Creating Physics 2D environment");
     gravity.x = 0.0f;
-    gravity.y = 60.0f;
+    gravity.y = 0.0f;
 	return true;
 }
 

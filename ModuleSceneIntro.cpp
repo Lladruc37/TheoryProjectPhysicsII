@@ -66,6 +66,47 @@ update_status ModuleSceneIntro::PreUpdate()
         }
         case GAME:
         {
+            if ((App->player->player.pos.y + App->player->height / 2) <= 0)
+            {
+                App->player->player.pos.y = App->renderer->camera.h - App->player->height / 2;
+                switch (currentScreen)
+                {
+                case EARTH:
+                {
+                    currentScreen = ASTEROIDS;
+                    CreateAsteroids();
+                    break;
+                }
+                case ASTEROIDS:
+                {
+                    currentScreen = MOON;
+                    DeleteAsteroids();
+                    CreateMoon();
+                    break;
+                }
+                }
+            }
+            else if (App->player->player.pos.y >= App->renderer->camera.h)
+            {
+                App->player->player.pos.y = 0;
+                switch (currentScreen)
+                {
+                case ASTEROIDS:
+                {
+                    currentScreen = EARTH;
+                    DeleteAsteroids();
+                    break;
+                }
+                case MOON:
+                {
+                    currentScreen = ASTEROIDS;
+                    //DeleteMoon();
+                    CreateAsteroids();
+                    break;
+                }
+                }
+            }
+
             break;
         }
     }
@@ -91,6 +132,7 @@ update_status ModuleSceneIntro::Update(float dt)
                 //App->physics->UpdatePhysics(&top, dt);
                 if (top.pos.x >= App->renderer->camera.w + top.width)
                     top.pos.x = 0 - top.width;
+                if (top.collider != nullptr)
                 top.collider->SetPos(top.pos.x, top.pos.y, top.width, top.height);
                 top.angle += 150.0f * dt;
 
@@ -100,6 +142,7 @@ update_status ModuleSceneIntro::Update(float dt)
                     //App->physics->UpdatePhysics(&mid[i], dt);
                     if (mid[i].pos.x <= 0 - mid[i].width)
                         mid[i].pos.x = App->renderer->camera.w + mid[i].width;
+                    if (mid[i].collider != nullptr)
                     mid[i].collider->SetPos(mid[i].pos.x, mid[i].pos.y, mid[i].width, mid[i].height);
                     mid[i].angle -= 100.0f * dt;
                 }
@@ -111,6 +154,7 @@ update_status ModuleSceneIntro::Update(float dt)
                     //App->physics->UpdatePhysics(&bot[i], dt);
                     if (bot[i].pos.x >= App->renderer->camera.w + bot[i].width)
                         bot[i].pos.x = 0 - bot[i].width;
+                    if (bot[i].collider != nullptr)
                     bot[i].collider->SetPos(bot[i].pos.x, bot[i].pos.y, bot[i].width, bot[i].height);
                     bot[i].angle += 50.0f * dt;
                 }
@@ -140,47 +184,6 @@ update_status ModuleSceneIntro::PostUpdate()
         }
         case GAME:
         {
-            if ((App->player->player.pos.y + App->player->height / 2) <= 0)
-            {
-                App->player->player.pos.y = App->renderer->camera.h - App->player->height / 2;
-                switch (currentScreen)
-                {
-                    case EARTH:
-                    {
-                        currentScreen = ASTEROIDS;
-                        CreateAsteroids();
-                        break;
-                    }
-                    case ASTEROIDS:
-                    {
-                        currentScreen = MOON;
-                        //DeleteAsteroids();
-                        CreateMoon();
-                        break;
-                    }
-                }
-            }
-            else if (App->player->player.pos.y >= App->renderer->camera.h)
-            {
-                App->player->player.pos.y = 0;
-                switch (currentScreen)
-                {
-                    case ASTEROIDS:
-                    {
-                        currentScreen = EARTH;
-                        //DeleteAsteroids();
-                        break;
-                    }
-                    case MOON:
-                    {
-                        currentScreen = ASTEROIDS;
-                        //DeleteMoon();
-                        CreateAsteroids();
-                        break;
-                    }
-                }
-            }
-
             switch (currentScreen)
             {
                 case EARTH:
@@ -194,18 +197,21 @@ update_status ModuleSceneIntro::PostUpdate()
                     App->renderer->Blit(asteroidTxt, top.pos.x, top.pos.y, false, top.angle);
                     for (int i = 0; i != 3; ++i)
                     App->renderer->Blit(asteroidTxt, mid[i].pos.x, mid[i].pos.y, false, mid[i].angle);
-                    for (int i = 0; i != 5; ++i)
+                    for (int i = 0; i != 4; ++i)
                     App->renderer->Blit(asteroidTxt, bot[i].pos.x, bot[i].pos.y, false, bot[i].angle);
 
                     if (App->physics->debug)
                     {
+                        if (top.collider != nullptr)
                         App->renderer->DrawQuad(top.collider->rect, 255, 0, 0, 100);
                         for (int i = 0; i != 3; ++i)
                         {
+                            if(mid[i].collider != nullptr)
                             App->renderer->DrawQuad(mid[i].collider->rect, 255, 0, 0, 100);
                         }
                         for (int i = 0; i != 4; ++i)
                         {
+                            if(bot[i].collider != nullptr)
                             App->renderer->DrawQuad(bot[i].collider->rect, 255, 0, 0, 100);
                         }
                     }
@@ -292,24 +298,36 @@ void ModuleSceneIntro::CreateAsteroids()
 
 void ModuleSceneIntro::DeleteAsteroids()
 {
-    App->physics->RemoveObject(&top);
+    if (top.collider != nullptr)
+    {
+        App->physics->RemoveObject(&top);
+        top.collider = nullptr;
+    }
     for (int i = 0; i != 3; ++i)
     {
-        App->physics->RemoveObject(&mid[i]);
+        if (mid[i].collider != nullptr)
+        {
+            App->physics->RemoveObject(&mid[i]);
+            mid[i].collider = nullptr;
+        }
     }
     for (int i = 0; i != 4; ++i)
     {
-        App->physics->RemoveObject(&bot[i]);
+        if (bot[i].collider != nullptr)
+        {
+            App->physics->RemoveObject(&bot[i]);
+            bot[i].collider = nullptr;
+        }
     }
 }
 
 void ModuleSceneIntro::CreateMoon()
 {
     moon.mass = 1.0f;
+    moon.radius = 186;
     moon.pos.x = 461;
     moon.pos.y = 245;
-    moon.radius = 186;
-    moon.collider = new Collider({ moon.pos.x,moon.pos.x,moon.radius*2,moon.radius*2 }, Collider::Type::MOON, this);
+    moon.collider = new Collider({ moon.pos.x - moon.radius,moon.pos.y - moon.radius,moon.radius*2,moon.radius*2 }, Collider::Type::MOON, this);
     App->physics->AddObject(&moon);
 }
 
