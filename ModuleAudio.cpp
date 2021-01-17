@@ -145,6 +145,19 @@ unsigned int ModuleAudio::LoadFx(const char* path)
 	return ret;
 }
 
+bool ModuleAudio::UnloadFx(uint index)
+{
+	Mix_Chunk* chunk = NULL;
+
+	if (fx.at(index - 1, chunk) == true)
+	{
+		Mix_FreeChunk(chunk);
+		return fx.del(fx.findNode(chunk));
+	}
+
+	return false;
+}
+
 // Play WAV
 int ModuleAudio::PlayFx(unsigned int id, int repeat)
 {

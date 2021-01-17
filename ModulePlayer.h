@@ -4,6 +4,8 @@
 #include "Globals.h"
 #include "p2Point.h"
 
+class Collider;
+
 class ModulePlayer : public Module
 {
 public:
@@ -15,9 +17,15 @@ public:
 	update_status Update(float dt);
     update_status PostUpdate();
 	bool CleanUp();
+    void OnCollision(Collider* c1, Collider* c2);
 
 public:
     SDL_Texture* player;
+    SDL_Texture* explosion;
+    Animation explosionAnim;
+    float dtAnim;
+    Collider* collider = nullptr;
+
     iPoint position;
     iPoint nextPos;
     int width;
@@ -27,12 +35,14 @@ public:
     fPoint nextSpeed;
     fPoint totalForce;
     int mass;
+    bool isDestroyed;
 
     bool isMovingUp;
     bool isMovingLeft;
     bool isMovingRight;
     bool isMovingDown;
     int movingFx;
+    int explosionFx;
     int movingChannelOne;
     int movingChannelTwo;
     int movingChannelThree;

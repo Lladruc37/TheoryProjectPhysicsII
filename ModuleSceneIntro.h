@@ -4,6 +4,8 @@
 #include "p2DynArray.h"
 #include "Globals.h"
 
+class Collider;
+
 enum Scene
 {
     TITLE_SCREEN,
@@ -17,6 +19,17 @@ enum GameScreen
     MOON
 };
 
+struct Asteroid
+{
+    iPoint pos;
+    int width;
+    int height;
+    float angle;
+    fPoint speed;
+    int mass;
+    Collider* collider = nullptr;
+};
+
 class ModuleSceneIntro : public Module
 {
 public:
@@ -28,6 +41,7 @@ public:
 	update_status Update(float dt);
     update_status PostUpdate();
 	bool CleanUp();
+    void OnCollision(Collider* c1, Collider* c2);
 
 public:
     Scene currentScene = TITLE_SCREEN;
@@ -38,6 +52,14 @@ public:
     SDL_Texture* bgAsteroids = nullptr;
     SDL_Texture* bgMoon = nullptr;
     bool startGame = false;
+
+    SDL_Texture* asteroidTxt = nullptr;
+    Asteroid top;
+    Asteroid mid[3];
+    Asteroid bot[4];
+
+    // WIN/LOSE //
+    SDL_Texture* gameOverTxt = nullptr;
 
     // TITLE SCREEN //
     SDL_Texture* backgroundTitle = nullptr;
