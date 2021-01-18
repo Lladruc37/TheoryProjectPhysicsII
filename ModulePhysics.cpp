@@ -192,6 +192,19 @@ void ModulePhysics::UpdatePhysics(Object* object, float dt)
 
     object->force.x = 0.0f;
     object->force.y = 0.0f;
+
+    if (object->collider != nullptr)
+    {
+        if (object->shape == Object::Shape::CIRCLE)
+        {
+            Circle* tmp = (Circle*)object;
+            object->collider->SetPos(object->pos.x - tmp->radius, object->pos.y - tmp->radius, object->collider->rect.w, object->collider->rect.h);
+        }
+        else
+        {
+            object->collider->SetPos(object->pos.x, object->pos.y, object->collider->rect.w, object->collider->rect.h);
+        }
+    }
     //LOG("pos: %d, %d acc: %f, %f", pos.x, pos.y, a.x, a.y);
 }
 

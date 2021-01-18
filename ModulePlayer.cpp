@@ -236,7 +236,7 @@ update_status ModulePlayer::Update(float dt)
         pastSpeed = player.speed;
         //App->physics->UpdatePhysics(&player, dt);
         App->physics->ResolveCollisions(&player, pastPos, pastSpeed, width, height);
-        player.collider->SetPos(player.pos.x, player.pos.y, width, height);
+        //player.collider->SetPos(player.pos.x, player.pos.y, width, height);
 
         // Player boundries
         if (player.pos.x <= 0) //Left bound

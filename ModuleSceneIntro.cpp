@@ -134,7 +134,7 @@ update_status ModuleSceneIntro::Update(float dt)
                 {
                     if (top.pos.x >= App->renderer->camera.w + top.collider->rect.w)
                         top.pos.x = 0 - top.collider->rect.w;
-                    top.collider->SetPos(top.pos.x, top.pos.y, top.collider->rect.w, top.collider->rect.h);
+                    //top.collider->SetPos(top.pos.x, top.pos.y, top.collider->rect.w, top.collider->rect.h);
                 }
                 top.angle += 150.0f * dt;
 
@@ -146,7 +146,7 @@ update_status ModuleSceneIntro::Update(float dt)
                     {
                         if (mid[i].pos.x <= 0 - mid[i].collider->rect.w)
                             mid[i].pos.x = App->renderer->camera.w + mid[i].collider->rect.w;
-                        mid[i].collider->SetPos(mid[i].pos.x, mid[i].pos.y, mid[i].collider->rect.w, mid[i].collider->rect.h);
+                        //mid[i].collider->SetPos(mid[i].pos.x, mid[i].pos.y, mid[i].collider->rect.w, mid[i].collider->rect.h);
                     }
                     mid[i].angle -= 100.0f * dt;
                 }
@@ -160,7 +160,7 @@ update_status ModuleSceneIntro::Update(float dt)
                     {
                         if (bot[i].pos.x >= App->renderer->camera.w + bot[i].collider->rect.w)
                             bot[i].pos.x = 0 - bot[i].collider->rect.w;
-                        bot[i].collider->SetPos(bot[i].pos.x, bot[i].pos.y, bot[i].collider->rect.w, bot[i].collider->rect.h);
+                        //bot[i].collider->SetPos(bot[i].pos.x, bot[i].pos.y, bot[i].collider->rect.w, bot[i].collider->rect.h);
                     }
                     bot[i].angle += 50.0f * dt;
                 }
