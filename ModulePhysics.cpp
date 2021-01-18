@@ -7,42 +7,30 @@ ModulePhysics::ModulePhysics(Application* app, bool start_enabled) : Module(app,
 {
 	debug = true;
 
-    matrix[Collider::Type::SPACE][Collider::Type::SPACE] = false;
-    matrix[Collider::Type::SPACE][Collider::Type::SOLID] = false;
-    matrix[Collider::Type::SPACE][Collider::Type::WATER] = false;
-    matrix[Collider::Type::SPACE][Collider::Type::MOON] = false;
-    matrix[Collider::Type::SPACE][Collider::Type::PLAYER] = false;
-    matrix[Collider::Type::SPACE][Collider::Type::ASTEROID] = false;
-
-    matrix[Collider::Type::SOLID][Collider::Type::SPACE] = false;
     matrix[Collider::Type::SOLID][Collider::Type::SOLID] = false;
     matrix[Collider::Type::SOLID][Collider::Type::WATER] = false;
     matrix[Collider::Type::SOLID][Collider::Type::MOON] = false;
     matrix[Collider::Type::SOLID][Collider::Type::PLAYER] = true;
     matrix[Collider::Type::SOLID][Collider::Type::ASTEROID] = false;
 
-    matrix[Collider::Type::WATER][Collider::Type::SPACE] = false;
     matrix[Collider::Type::WATER][Collider::Type::SOLID] = false;
     matrix[Collider::Type::WATER][Collider::Type::WATER] = false;
     matrix[Collider::Type::WATER][Collider::Type::MOON] = false;
     matrix[Collider::Type::WATER][Collider::Type::PLAYER] = true;
     matrix[Collider::Type::WATER][Collider::Type::ASTEROID] = false;
 
-    matrix[Collider::Type::MOON][Collider::Type::SPACE] = false;
     matrix[Collider::Type::MOON][Collider::Type::SOLID] = false;
     matrix[Collider::Type::MOON][Collider::Type::WATER] = false;
     matrix[Collider::Type::MOON][Collider::Type::MOON] = false;
     matrix[Collider::Type::MOON][Collider::Type::PLAYER] = true;
     matrix[Collider::Type::MOON][Collider::Type::ASTEROID] = false;
 
-    matrix[Collider::Type::PLAYER][Collider::Type::SPACE] = false;
     matrix[Collider::Type::PLAYER][Collider::Type::SOLID] = true;
     matrix[Collider::Type::PLAYER][Collider::Type::WATER] = true;
     matrix[Collider::Type::PLAYER][Collider::Type::MOON] = true;
     matrix[Collider::Type::PLAYER][Collider::Type::PLAYER] = false;
     matrix[Collider::Type::PLAYER][Collider::Type::ASTEROID] = true;
 
-    matrix[Collider::Type::ASTEROID][Collider::Type::SPACE] = false;
     matrix[Collider::Type::ASTEROID][Collider::Type::SOLID] = false;
     matrix[Collider::Type::ASTEROID][Collider::Type::WATER] = false;
     matrix[Collider::Type::ASTEROID][Collider::Type::MOON] = false;

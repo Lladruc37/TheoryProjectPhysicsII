@@ -12,7 +12,6 @@ public:
 	enum Type
 	{
 		NONE = -1,
-		SPACE,
 		SOLID,
 		WATER,
 		MOON,
