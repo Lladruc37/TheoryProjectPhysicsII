@@ -3,7 +3,7 @@
 #include "Globals.h"
 #include "p2Point.h"
 
-#define MAX_COLLIDERS 250
+#define WATER_DENSITY 0.003
 
 class Collider
 {
@@ -89,7 +89,8 @@ private:
 	// Checks if two rects are intersecting
 	//bool Intersects(const SDL_Rect& r) const;
 	bool Intersects(Object* A, Object* B) const;
-	void ResolveCollisions(Object* A, Object* B) const; // Requires Raycast for the future
+	void ResolveCollisions(Object* A, Object* B); // Requires Raycast for the future
+	void ResetSpeed(Object* A);
 
 public:
 	fPoint gravity;

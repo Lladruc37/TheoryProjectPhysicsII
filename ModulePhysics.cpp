@@ -166,7 +166,7 @@ void ModulePhysics::UpdateGravity()
     {
     case GameScreen::EARTH:
         gravity.x = 0.0f;
-        gravity.y = 60.0f;
+        gravity.y = 90.0f;
         break;
     case GameScreen::ASTEROIDS:
         gravity.x = 0.0f;
@@ -214,18 +214,8 @@ void ModulePhysics::UpdatePhysics(Object* object, float dt)
     //LOG("pos: %d, %d acc: %f, %f", pos.x, pos.y, a.x, a.y);
 }
 
-void ModulePhysics::ResolveCollisions(Object* A, Object* B) const
+void ModulePhysics::ResolveCollisions(Object* A, Object* B) 
 {
-    if (A->collider->type != Collider::Type::ASTEROID)
-    {
-        A->speed.x = 0.0f;
-        A->speed.y = 0.0f;
-    }
-    if (B->collider->type != Collider::Type::ASTEROID)
-    {
-        B->speed.x = 0.0f;
-        B->speed.y = 0.0f;
-    }
     if (A->shape == Object::Shape::RECT && B->shape == Object::Shape::RECT)
     {
         //return (A->collider->rect.x < B->collider->rect.x + B->collider->rect.w
@@ -234,81 +224,114 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B) const
         //    && A->collider->rect.h + A->collider->rect.y > B->collider->rect.y);
 
         //float dist = sqrtf(abs(B->pos.x - A->pos.x) * abs(B->pos.x - A->pos.x) + abs(B->pos.y - A->pos.y) * abs(B->pos.y - A->pos.y));
-        float heightDif;
-        if (B->pos.y <= A->pos.y)
+        if (A->collider->type == Collider::Type::WATER || B->collider->type == Collider::Type::WATER)
         {
-            heightDif = B->collider->rect.h;
+            //BUOYANCY
+            if (A->collider->type == Collider::Type::WATER)
+            {
+                float volum;
+                if (A->collider->rect.y <= B->collider->rect.y)
+                {
+                    volum = B->collider->rect.h * B->collider->rect.w;
+                }
+                else
+                {
+                    volum = (float)abs((760 - B->collider->rect.y) - B->collider->rect.h) * B->collider->rect.w;
+                }
+                float tmpForce = B->force.y + (B->mass * gravity.y - (WATER_DENSITY)*volum * gravity.y) / 2;
+                if (tmpForce < -400.0f)
+                {
+                    tmpForce = -400.0f;
+                }
+               B->force.y = tmpForce;
+               LOG("Force: %f, volum: %f", B->force.y, volum );
+            }
+            else
+            {
+                ResolveCollisions(B, A);
+            }
         }
-        else
+        else 
         {
-            heightDif = A->collider->rect.h;
+            float heightDif;
+            if (B->pos.y <= A->pos.y)
+            {
+                heightDif = B->collider->rect.h;
+            }
+            else
+            {
+                heightDif = A->collider->rect.h;
+            }
+            float dist = (float)abs(B->pos.y - A->pos.y);
+
+            fPoint frameDifB;
+            frameDifB.x = B->pos.x - B->pastPos.x;
+            frameDifB.y = B->pos.y - B->pastPos.y;
+            iPoint tmpB;
+            tmpB.x = B->pos.x;
+            tmpB.y = B->pos.y;
+            fPoint frameDifA;
+            frameDifA.x = A->pos.x - A->pastPos.x;
+            frameDifA.y = A->pos.y - A->pastPos.y;
+            iPoint tmpA;
+            tmpA.x = A->pos.x;
+            tmpA.y = A->pos.y;
+            while (dist < heightDif)
+            {
+                if (frameDifB.x > 0)
+                {
+                    tmpB.x--;
+                    frameDifB.x--;
+                }
+                else if (frameDifB.x < 0)
+                {
+                    tmpB.x++;
+                    frameDifB.x++;
+                }
+                if (frameDifB.y > 0)
+                {
+                    tmpB.y--;
+                    frameDifB.y--;
+                }
+                else if (frameDifB.y < 0)
+                {
+                    tmpB.y++;
+                    frameDifB.y++;
+                }
+
+                if (frameDifA.x > 0)
+                {
+                    tmpA.x--;
+                    frameDifA.x--;
+                }
+                else if (frameDifA.x < 0)
+                {
+                    tmpA.x++;
+                    frameDifA.x++;
+                }
+                if (frameDifA.y > 0)
+                {
+                    tmpA.y--;
+                    frameDifA.y--;
+                }
+                else if (frameDifA.y < 0)
+                {
+                    tmpA.y++;
+                    frameDifA.y++;
+                }
+
+                dist = (float)abs(tmpB.y - tmpA.y);
+                LOG("%d,%d - %d,%d = %f", tmpB.x, tmpB.y, tmpA.x, tmpA.y, dist);
+            }
+            B->pos.x = tmpB.x;
+            B->pos.y = tmpB.y;
+            A->pos.x = tmpA.x;
+            A->pos.y = tmpA.y;
+
+            ResetSpeed(A);
+            ResetSpeed(B);
         }
-        float dist = (float)abs(B->pos.y - A->pos.y);
-
-        fPoint frameDifB;
-        frameDifB.x = B->pos.x - B->pastPos.x;
-        frameDifB.y = B->pos.y - B->pastPos.y;
-        iPoint tmpB;
-        tmpB.x = B->pos.x;
-        tmpB.y = B->pos.y;
-        fPoint frameDifA;
-        frameDifA.x = A->pos.x - A->pastPos.x;
-        frameDifA.y = A->pos.y - A->pastPos.y;
-        iPoint tmpA;
-        tmpA.x = A->pos.x;
-        tmpA.y = A->pos.y;
-        while (dist < heightDif)
-        {
-            if (frameDifB.x > 0)
-            {
-                tmpB.x--;
-                frameDifB.x--;
-            }
-            else if (frameDifB.x < 0)
-            {
-                tmpB.x++;
-                frameDifB.x++;
-            }
-            if (frameDifB.y > 0)
-            {
-                tmpB.y--;
-                frameDifB.y--;
-            }
-            else if (frameDifB.y < 0)
-            {
-                tmpB.y++;
-                frameDifB.y++;
-            }
-
-            if (frameDifA.x > 0)
-            {
-                tmpA.x--;
-                frameDifA.x--;
-            }
-            else if (frameDifA.x < 0)
-            {
-                tmpA.x++;
-                frameDifA.x++;
-            }
-            if (frameDifA.y > 0)
-            {
-                tmpA.y--;
-                frameDifA.y--;
-            }
-            else if (frameDifA.y < 0)
-            {
-                tmpA.y++;
-                frameDifA.y++;
-            }
-
-            dist = (float)abs(tmpB.y - tmpA.y);
-            LOG("%d,%d - %d,%d = %f", tmpB.x, tmpB.y, tmpA.x, tmpA.y, dist);
-        }
-        B->pos.x = tmpB.x;
-        B->pos.y = tmpB.y;
-        A->pos.x = tmpA.x;
-        A->pos.y = tmpA.y;
-    }
+    }   
     else if (A->shape == Object::Shape::RECT && B->shape == Object::Shape::CIRCLE)
     {
         Circle* circle = (Circle*)B;
@@ -479,6 +502,12 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B) const
         A->pos.x = tmpA.x;
         A->pos.y = tmpA.y;
     }
+}
+
+void ModulePhysics::ResetSpeed(Object* A)
+{
+    A->speed.x = 0.0f;
+    A->speed.y = 0.0f;
 }
 
 void ModulePhysics::AddObject(Object* object)

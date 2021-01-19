@@ -127,7 +127,8 @@ update_status ModuleSceneIntro::Update(float dt)
         {
             if (currentScreen == EARTH)
             {
-                land.force.y = -60.0f;
+                land.force.y = -90.0f;
+                water.force.y = -90.0f;
                 //if ((land.pos.y + land.collider->rect.h) > (App->renderer->camera.h)) //Bottom bound
                 //{
                 //    land.pos.y = App->renderer->camera.h - land.collider->rect.h - 1;
@@ -210,6 +211,10 @@ update_status ModuleSceneIntro::PostUpdate()
                     if (App->physics->debug && land.collider != nullptr)
                     {
                         App->renderer->DrawQuad(land.collider->rect, 255, 0, 0, 100);
+                    }
+                    if (App->physics->debug && water.collider != nullptr)
+                    {
+                        App->renderer->DrawQuad(water.collider->rect, 0, 0, 255, 100);
                     }
                     break;
                 }
@@ -393,6 +398,15 @@ void ModuleSceneIntro::CreateEarth()
     {
         land.collider = new Collider({ land.pos.x,land.pos.y,570,180 }, Collider::Type::SOLID, this);
         App->physics->AddObject(&land);
+    }
+
+    water.pos.x = 570;
+    water.pos.y = 740;
+    water.mass = 1.0f;
+    if (water.collider == nullptr)
+    {
+        water.collider = new Collider({ water.pos.x,water.pos.y,350,180 }, Collider::Type::WATER, this);
+        App->physics->AddObject(&water);
     }
 }
 

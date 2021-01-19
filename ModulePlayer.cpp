@@ -92,7 +92,7 @@ update_status ModulePlayer::PreUpdate()
         {
             //if ((position.y + height) > (App->renderer->camera.h))
             //{
-            player.force.y = -1000.0f;
+            player.force.y = -500.0f * player.mass;
             //}
             //else
             /*{
@@ -122,7 +122,7 @@ update_status ModulePlayer::PreUpdate()
             }
             else
             {*/
-            player.force.x = -1000.0f;
+            player.force.x = -500.0f * player.mass;
             //}
 
             if (!isMovingLeft)
@@ -144,7 +144,7 @@ update_status ModulePlayer::PreUpdate()
         {
             //if (position.y <= 0)
             //{
-            player.force.y = 1000.0f;
+            player.force.y = 500.0f * player.mass;
             //}
             /*else
             {
@@ -174,7 +174,7 @@ update_status ModulePlayer::PreUpdate()
             }
             else
             {*/
-            player.force.x = 1000.0f;
+            player.force.x = 500.0f * player.mass;
             //}
 
             if (!isMovingDown)
