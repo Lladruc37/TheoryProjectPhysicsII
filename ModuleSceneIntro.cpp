@@ -216,11 +216,11 @@ update_status ModuleSceneIntro::PostUpdate()
                 case ASTEROIDS:
                 {
                     App->renderer->Blit(bgAsteroids, 0, 0, true);
-                    App->renderer->Blit(asteroidTxt, top.pos.x, top.pos.y, false, top.angle);
+                    App->renderer->Blit(asteroidTxt, top.pos.x - top.radius, top.pos.y - top.radius, false, top.angle);
                     for (int i = 0; i != 3; ++i)
-                    App->renderer->Blit(asteroidTxt, mid[i].pos.x, mid[i].pos.y, false, mid[i].angle);
+                    App->renderer->Blit(asteroidTxt, mid[i].pos.x - mid[i].radius, mid[i].pos.y - mid[i].radius, false, mid[i].angle);
                     for (int i = 0; i != 4; ++i)
-                    App->renderer->Blit(asteroidTxt, bot[i].pos.x, bot[i].pos.y, false, bot[i].angle);
+                    App->renderer->Blit(asteroidTxt, bot[i].pos.x - bot[i].radius, bot[i].pos.y - bot[i].radius, false, bot[i].angle);
 
                     if (App->physics->debug)
                     {
