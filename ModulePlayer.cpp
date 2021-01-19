@@ -235,7 +235,7 @@ update_status ModulePlayer::Update(float dt)
         pastPos = player.pos;
         pastSpeed = player.speed;
         //App->physics->UpdatePhysics(&player, dt);
-        App->physics->ResolveCollisions(&player, pastPos, pastSpeed, width, height);
+        //App->physics->ResolveCollisions(&player, pastPos, pastSpeed, width, height);
         //player.collider->SetPos(player.pos.x, player.pos.y, width, height);
 
         // Player boundries
@@ -319,6 +319,13 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
 {
     if (!godMode)
     {
+        if (App->scene_intro->currentScreen == GameScreen::EARTH)
+        {
+            if (c2->type == Collider::Type::SOLID)
+            {
+                LOG("Solid!");
+            }
+        }
         if (App->scene_intro->currentScreen == GameScreen::ASTEROIDS)
         {
             if (c2->type == Collider::Type::ASTEROID)

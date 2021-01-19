@@ -98,7 +98,7 @@ update_status ModulePhysics::PreUpdate()
 
             if (Intersects(tmp->data,tmp2->data) && matrix[c1->type][c2->type])
             {
-                // Resolve Collisions
+                ResolveCollisions(tmp->data, tmp2->data);
                 if (c1->listener)
                 {
                     c1->listener->OnCollision(c1, c2);
@@ -183,6 +183,10 @@ void ModulePhysics::UpdateGravity()
 
 void ModulePhysics::UpdatePhysics(Object* object, float dt)
 {
+    // update past variables
+    object->pastPos = object->pos;
+    object->pastSpeed = object->speed;
+
     fPoint a = Force2Accel(object->force, object->mass);
     // verlet
     object->pos.x = object->pos.x + object->speed.x * dt + (a.x * dt * dt * 0.5);
@@ -190,9 +194,11 @@ void ModulePhysics::UpdatePhysics(Object* object, float dt)
     object->pos.y = object->pos.y + object->speed.y * dt + ((gravity.y + a.y) * dt * dt * 0.5);
     object->speed.y = object->speed.y + ((gravity.y + a.y) * dt);
 
+    // reset force
     object->force.x = 0.0f;
     object->force.y = 0.0f;
 
+    // update the collider position
     if (object->collider != nullptr)
     {
         if (object->shape == Object::Shape::CIRCLE)
@@ -208,38 +214,272 @@ void ModulePhysics::UpdatePhysics(Object* object, float dt)
     //LOG("pos: %d, %d acc: %f, %f", pos.x, pos.y, a.x, a.y);
 }
 
-void ModulePhysics::ResolveCollisions(Object* object, iPoint pastPos, fPoint pastSpeed, int width, int height)
+void ModulePhysics::ResolveCollisions(Object* A, Object* B) const
 {
-    //if ((nextPos.x + width) > App->renderer->camera.x + App->renderer->camera.w)
-    //{
-    //    nextPos.x = App->renderer->camera.w - width;
-    //}
-    //if ((nextPos.x) < App->renderer->camera.x)
-    //{
-    //    nextPos.x = App->renderer->camera.w - width;
-    //}
+    if (A->collider->type != Collider::Type::ASTEROID)
+    {
+        A->speed.x = 0.0f;
+        A->speed.y = 0.0f;
+    }
+    if (B->collider->type != Collider::Type::ASTEROID)
+    {
+        B->speed.x = 0.0f;
+        B->speed.y = 0.0f;
+    }
+    if (A->shape == Object::Shape::RECT && B->shape == Object::Shape::RECT)
+    {
+        //return (A->collider->rect.x < B->collider->rect.x + B->collider->rect.w
+        //    && A->collider->rect.x + A->collider->rect.w > B->collider->rect.x
+        //    && A->collider->rect.y < B->collider->rect.y + B->collider->rect.h
+        //    && A->collider->rect.h + A->collider->rect.y > B->collider->rect.y);
 
+        //float dist = sqrtf(abs(B->pos.x - A->pos.x) * abs(B->pos.x - A->pos.x) + abs(B->pos.y - A->pos.y) * abs(B->pos.y - A->pos.y));
+        float heightDif;
+        if (B->pos.y <= A->pos.y)
+        {
+            heightDif = B->collider->rect.h;
+        }
+        else
+        {
+            heightDif = A->collider->rect.h;
+        }
+        float dist = (float)abs(B->pos.y - A->pos.y);
 
+        fPoint frameDifB;
+        frameDifB.x = B->pos.x - B->pastPos.x;
+        frameDifB.y = B->pos.y - B->pastPos.y;
+        iPoint tmpB;
+        tmpB.x = B->pos.x;
+        tmpB.y = B->pos.y;
+        fPoint frameDifA;
+        frameDifA.x = A->pos.x - A->pastPos.x;
+        frameDifA.y = A->pos.y - A->pastPos.y;
+        iPoint tmpA;
+        tmpA.x = A->pos.x;
+        tmpA.y = A->pos.y;
+        while (dist < heightDif)
+        {
+            if (frameDifB.x > 0)
+            {
+                tmpB.x--;
+                frameDifB.x--;
+            }
+            else if (frameDifB.x < 0)
+            {
+                tmpB.x++;
+                frameDifB.x++;
+            }
+            if (frameDifB.y > 0)
+            {
+                tmpB.y--;
+                frameDifB.y--;
+            }
+            else if (frameDifB.y < 0)
+            {
+                tmpB.y++;
+                frameDifB.y++;
+            }
 
+            if (frameDifA.x > 0)
+            {
+                tmpA.x--;
+                frameDifA.x--;
+            }
+            else if (frameDifA.x < 0)
+            {
+                tmpA.x++;
+                frameDifA.x++;
+            }
+            if (frameDifA.y > 0)
+            {
+                tmpA.y--;
+                frameDifA.y--;
+            }
+            else if (frameDifA.y < 0)
+            {
+                tmpA.y++;
+                frameDifA.y++;
+            }
 
-    LOG("pos: %d, %d speed: %f, %f", object->pos.x, object->pos.y, object->speed.x, object->speed.y);
+            dist = (float)abs(tmpB.y - tmpA.y);
+            LOG("%d,%d - %d,%d = %f", tmpB.x, tmpB.y, tmpA.x, tmpA.y, dist);
+        }
+        B->pos.x = tmpB.x;
+        B->pos.y = tmpB.y;
+        A->pos.x = tmpA.x;
+        A->pos.y = tmpA.y;
+    }
+    else if (A->shape == Object::Shape::RECT && B->shape == Object::Shape::CIRCLE)
+    {
+        Circle* circle = (Circle*)B;
+        iPoint rPos;
+        // find closest X
+        if (A->collider->rect.x > B->pos.x)
+        {
+            // left
+            rPos.x = A->collider->rect.x;
+        }
+        else if (A->collider->rect.x + A->collider->rect.w < B->pos.x)
+        {
+            // right
+            rPos.x = A->collider->rect.x + A->collider->rect.w;
+        }
+        else
+        {
+            // inside
+            rPos.x = B->pos.x;
+        }
+
+        // find closest Y
+        if (A->collider->rect.y > B->pos.y)
+        {
+            // top
+            rPos.y = A->collider->rect.y;
+        }
+        else if (A->collider->rect.y + A->collider->rect.h < B->pos.y)
+        {
+            // bot
+            rPos.y = A->collider->rect.y + A->collider->rect.h;
+        }
+        else
+        {
+            // inside
+            rPos.y = B->pos.y;
+        }
+
+        // compute distance
+        float dist = sqrtf((float)abs(B->pos.x - rPos.x) * (float)abs(B->pos.x - rPos.x) + (float)abs(B->pos.y - rPos.y) * (float)abs(B->pos.y - rPos.y));
+
+        fPoint frameDifB;
+        frameDifB.x = B->pos.x - B->pastPos.x;
+        frameDifB.y = B->pos.y - B->pastPos.y;
+        iPoint tmpB;
+        tmpB.x = B->pos.x;
+        tmpB.y = B->pos.y;
+        fPoint frameDifA;
+        frameDifA.x = A->pos.x - A->pastPos.x;
+        frameDifA.y = A->pos.y - A->pastPos.y;
+        iPoint tmpA;
+        tmpA.x = rPos.x;
+        tmpA.y = rPos.y;
+        while (dist < circle->radius)
+        {
+            if (frameDifB.x > 0)
+            {
+                tmpB.x--;
+                frameDifB.x--;
+            }
+            else if (frameDifB.x < 0)
+            {
+                tmpB.x++;
+                frameDifB.x++;
+            }
+            if (frameDifB.y > 0)
+            {
+                tmpB.y--;
+                frameDifB.y--;
+            }
+            else if (frameDifB.y < 0)
+            {
+                tmpB.y++;
+                frameDifB.y++;
+            }
+
+            if (frameDifA.x > 0)
+            {
+                tmpA.x--;
+                frameDifA.x--;
+            }
+            else if (frameDifA.x < 0)
+            {
+                tmpA.x++;
+                frameDifA.x++;
+            }
+            if (frameDifA.y > 0)
+            {
+                tmpA.y--;
+                frameDifA.y--;
+            }
+            else if (frameDifA.y < 0)
+            {
+                tmpA.y++;
+                frameDifA.y++;
+            }
+
+            dist = sqrtf((float)abs(tmpB.x - tmpA.x) * (float)abs(tmpB.x - tmpA.x) + (float)abs(tmpB.y - tmpA.y) * (float)abs(tmpB.y - tmpA.y));
+            LOG("%d,%d - %d,%d = %f", tmpB.x, tmpB.y, tmpA.x, tmpA.y, dist);
+        }
+        B->pos.x = tmpB.x;
+        B->pos.y = tmpB.y;
+        A->pos.x += tmpA.x - rPos.x;
+        A->pos.y += tmpA.y - rPos.y;
+    }
+    else if (A->shape == Object::Shape::CIRCLE && B->shape == Object::Shape::RECT)
+    {
+        ResolveCollisions(B, A);
+    }
+    else if (A->shape == Object::Shape::CIRCLE && B->shape == Object::Shape::CIRCLE)
+    {
+        Circle* circleA = (Circle*)A;
+        Circle* circleB = (Circle*)B;
+        float dist = sqrtf(abs(B->pos.x - A->pos.x) * abs(B->pos.x - A->pos.x) + abs(B->pos.y - A->pos.y) * abs(B->pos.y - A->pos.y));
+
+        fPoint frameDifB;
+        frameDifB.x = B->pos.x - B->pastPos.x;
+        frameDifB.y = B->pos.y - B->pastPos.y;
+        iPoint tmpB;
+        tmpB.x = B->pos.x;
+        tmpB.y = B->pos.y;
+        fPoint frameDifA;
+        frameDifA.x = A->pos.x - A->pastPos.x;
+        frameDifA.y = A->pos.y - A->pastPos.y;
+        iPoint tmpA;
+        tmpA.x = A->pos.x;
+        tmpA.y = A->pos.y;
+        while (dist < (circleA->radius + circleB->radius))
+        {
+            if (frameDifB.x > 0)
+            {
+                tmpB.x--;
+            }
+            else
+            {
+                tmpB.x++;
+            }
+            if (frameDifB.y > 0)
+            {
+                tmpB.y--;
+            }
+            else
+            {
+                tmpB.y++;
+            }
+
+            if (frameDifA.x > 0)
+            {
+                tmpA.x--;
+            }
+            else
+            {
+                tmpA.x++;
+            }
+            if (frameDifA.y > 0)
+            {
+                tmpA.y--;
+            }
+            else
+            {
+                tmpA.y++;
+            }
+
+            dist = sqrtf((float)abs(tmpB.x - tmpA.x) * (float)abs(tmpB.x - tmpA.x) + (float)abs(tmpB.y - tmpA.y) * (float)abs(tmpB.y - tmpA.y));
+        }
+        B->pos.x = tmpB.x;
+        B->pos.y = tmpB.y;
+        A->pos.x = tmpA.x;
+        A->pos.y = tmpA.y;
+    }
 }
-
-//Collider* ModulePhysics::AddCollider(SDL_Rect rect, Collider::Type type, Module* listener)
-//{
-//    Collider* ret = nullptr;
-//    // Adds the collider in the first null spot on the array
-//    for (uint i = 0; i < MAX_COLLIDERS; ++i)
-//    {
-//        if (colliders[i] == nullptr)
-//        {
-//            ret = colliders[i] = new Collider(rect, type, listener);
-//            break;
-//        }
-//    }
-//
-//    return ret;
-//}
 
 void ModulePhysics::AddObject(Object* object)
 {
@@ -320,7 +560,7 @@ bool ModulePhysics::Intersects(Object* A, Object* B) const
     {
         Circle* circleA = (Circle*)A;
         Circle* circleB = (Circle*)B;
-        float dist = sqrtf(abs(B->collider->rect.x - A->collider->rect.x) * abs(B->collider->rect.x - A->collider->rect.x) + abs(B->collider->rect.y - A->collider->rect.y) * abs(B->collider->rect.y - A->collider->rect.y));
-        return (dist > (circleA->radius + circleB->radius));
+        float dist = sqrtf(abs(B->pos.x - A->pos.x) * abs(B->pos.x - A->pos.x) + abs(B->pos.y - A->pos.y) * abs(B->pos.y - A->pos.y));
+        return (dist < (circleA->radius + circleB->radius));
     }
 }

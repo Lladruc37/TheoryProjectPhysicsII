@@ -48,7 +48,9 @@ struct Object
 	{}
 
 	iPoint pos;
+	iPoint pastPos;
 	fPoint speed;
+	fPoint pastSpeed;
 	fPoint force;
 	float mass;
 	Shape shape;
@@ -74,7 +76,6 @@ public:
 	bool CleanUp();
 
     void UpdatePhysics(Object* object, float dt);
-    void ResolveCollisions(Object* object, iPoint pastPos, fPoint pastSpeed, int width, int height); // Requires Raycast for the future
 
 	// Adds a new collider to the list
 	//Collider* AddCollider(SDL_Rect rect, Collider::Type type, Module* listener = nullptr);
@@ -88,6 +89,7 @@ private:
 	// Checks if two rects are intersecting
 	//bool Intersects(const SDL_Rect& r) const;
 	bool Intersects(Object* A, Object* B) const;
+	void ResolveCollisions(Object* A, Object* B) const; // Requires Raycast for the future
 
 public:
 	fPoint gravity;

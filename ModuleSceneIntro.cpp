@@ -74,6 +74,7 @@ update_status ModuleSceneIntro::PreUpdate()
                 case EARTH:
                 {
                     currentScreen = ASTEROIDS;
+                    DeleteEarth();
                     CreateAsteroids();
                     break;
                 }
@@ -95,12 +96,13 @@ update_status ModuleSceneIntro::PreUpdate()
                 {
                     currentScreen = EARTH;
                     DeleteAsteroids();
+                    CreateEarth();
                     break;
                 }
                 case MOON:
                 {
                     currentScreen = ASTEROIDS;
-                    //DeleteMoon();
+                    DeleteMoon();
                     CreateAsteroids();
                     break;
                 }
@@ -123,7 +125,15 @@ update_status ModuleSceneIntro::Update(float dt)
         }
         case GAME:
         {
-            if (currentScreen == ASTEROIDS)
+            if (currentScreen == EARTH)
+            {
+                land.force.y = -60.0f;
+                //if ((land.pos.y + land.collider->rect.h) > (App->renderer->camera.h)) //Bottom bound
+                //{
+                //    land.pos.y = App->renderer->camera.h - land.collider->rect.h - 1;
+                //}
+            }
+            else if (currentScreen == ASTEROIDS)
             {
                 //fPoint a;
                 //a.x = 0;
@@ -183,6 +193,7 @@ update_status ModuleSceneIntro::PostUpdate()
                 App->player->Enable();
                 currentScene = GAME;
                 currentScreen = EARTH;
+                CreateEarth();
                 startGame = false;
             }
             App->renderer->Blit(backgroundTitle, 0, 0,true);
@@ -195,6 +206,11 @@ update_status ModuleSceneIntro::PostUpdate()
                 case EARTH:
                 {
                     App->renderer->Blit(bgEarth, 0, 0, true);
+
+                    if (App->physics->debug && land.collider != nullptr)
+                    {
+                        App->renderer->DrawQuad(land.collider->rect, 255, 0, 0, 100);
+                    }
                     break;
                 }
                 case ASTEROIDS:
@@ -247,54 +263,82 @@ update_status ModuleSceneIntro::PostUpdate()
 
 void ModuleSceneIntro::CreateAsteroids()
 {
+    //top.pos.x = -70;
+    //top.pos.y = 135;
+    //top.angle = (float)(rand() % 360);
+    //top.speed.x = 550.0f;
+    //top.mass = 3;
+    //if (top.collider == nullptr)
+    //{
+    //    top.collider = new Collider({ top.pos.x,top.pos.y,70,70 }, Collider::Type::ASTEROID, this);
+    //    App->physics->AddObject(&top);
+    //}
+
+    top.mass = 1.0f;
+    top.radius = 35;
     top.pos.x = -70;
     top.pos.y = 135;
     top.angle = (float)(rand() % 360);
     top.speed.x = 550.0f;
-    top.mass = 3;
+    top.shape = Object::Shape::CIRCLE;
     if (top.collider == nullptr)
     {
-        top.collider = new Collider({ top.pos.x,top.pos.y,70,70 }, Collider::Type::ASTEROID, this);
+        top.collider = new Collider({ top.pos.x - top.radius,top.pos.y - top.radius,top.radius * 2,top.radius * 2 }, Collider::Type::ASTEROID, this);
         App->physics->AddObject(&top);
-    }
-    else
-    {
-        top.collider->SetPos(top.pos.x, top.pos.y, top.collider->rect.w, top.collider->rect.h);
     }
 
     for (int i = 0; i != 3; ++i)
     {
-        mid[i].pos.x = App->renderer->camera.w + 70 - (i * 350);
-        mid[i].pos.y = 375;
+        //mid[i].pos.x = App->renderer->camera.w + 70 - (i * 350);
+        //mid[i].pos.y = 375;
+        //mid[i].angle = (float)(rand() % 360);
+        //mid[i].speed.x = -300.0f;
+        //mid[i].mass = 3;
+        //if (mid[i].collider == nullptr)
+        //{
+        //    mid[i].collider = new Collider({ mid[i].pos.x,mid[i].pos.y,70,70 }, Collider::Type::ASTEROID, this);
+        //    App->physics->AddObject(&mid[i]);
+        //}
+
+        mid[i].mass = 1.0f;
+        mid[i].radius = 35;
+        mid[i].pos.x = App->renderer->camera.w + 105 - (i * 350);//70
+        mid[i].pos.y = 410;//375
         mid[i].angle = (float)(rand() % 360);
         mid[i].speed.x = -300.0f;
-        mid[i].mass = 3;
+        mid[i].shape = Object::Shape::CIRCLE;
         if (mid[i].collider == nullptr)
         {
-            mid[i].collider = new Collider({ mid[i].pos.x,mid[i].pos.y,70,70 }, Collider::Type::ASTEROID, this);
+            mid[i].collider = new Collider({ mid[i].pos.x - mid[i].radius,mid[i].pos.y - mid[i].radius,mid[i].radius * 2,mid[i].radius * 2 }, Collider::Type::ASTEROID, this);
             App->physics->AddObject(&mid[i]);
-        }
-        else
-        {
-            mid[i].collider->SetPos(mid[i].pos.x, mid[i].pos.y, mid[i].collider->rect.w, mid[i].collider->rect.h);
         }
     }
 
     for (int i = 0; i != 4; ++i)
     {
-        bot[i].pos.x = 70 + (i * 262);
-        bot[i].pos.y = 615;
+        //bot[i].pos.x = 70 + (i * 262);
+        //bot[i].pos.y = 615;
+        //bot[i].angle = (float)(rand() % 360);
+        //bot[i].speed.x = 165.0f;
+        //bot[i].mass = 3;
+        //if (bot[i].collider == nullptr)
+        //{
+        //    bot[i].collider = new Collider({ bot[i].pos.x,bot[i].pos.y,70,70 }, Collider::Type::ASTEROID, this);
+        //    App->physics->AddObject(&bot[i]);
+        //}
+
+
+        bot[i].mass = 1.0f;
+        bot[i].radius = 35;
+        bot[i].pos.x = 105 + (i * 262);//70
+        bot[i].pos.y = 650;//615
         bot[i].angle = (float)(rand() % 360);
         bot[i].speed.x = 165.0f;
-        bot[i].mass = 3;
+        bot[i].shape = Object::Shape::CIRCLE;
         if (bot[i].collider == nullptr)
         {
-            bot[i].collider = new Collider({ bot[i].pos.x,bot[i].pos.y,70,70 }, Collider::Type::ASTEROID, this);
+            bot[i].collider = new Collider({ bot[i].pos.x - bot[i].radius,bot[i].pos.y - bot[i].radius,bot[i].radius * 2,bot[i].radius * 2 }, Collider::Type::ASTEROID, this);
             App->physics->AddObject(&bot[i]);
-        }
-        else
-        {
-            bot[i].collider->SetPos(bot[i].pos.x, bot[i].pos.y, bot[i].collider->rect.w, bot[i].collider->rect.h);
         }
     }
 }
@@ -338,6 +382,23 @@ void ModuleSceneIntro::CreateMoon()
 void ModuleSceneIntro::DeleteMoon()
 {
     App->physics->RemoveObject(&moon);
+}
+
+void ModuleSceneIntro::CreateEarth()
+{
+    land.pos.x = 0;
+    land.pos.y = 740;
+    land.mass = 1.0f;
+    if (land.collider == nullptr)
+    {
+        land.collider = new Collider({ land.pos.x,land.pos.y,570,180 }, Collider::Type::SOLID, this);
+        App->physics->AddObject(&land);
+    }
+}
+
+void ModuleSceneIntro::DeleteEarth()
+{
+    App->physics->RemoveObject(&land);
 }
 
 void ModuleSceneIntro::OnCollision(Collider* c1, Collider* c2) {}

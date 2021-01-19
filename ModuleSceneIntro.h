@@ -38,6 +38,8 @@ public:
     void DeleteAsteroids();
     void CreateMoon();
     void DeleteMoon();
+    void CreateEarth();
+    void DeleteEarth();
 
 public:
     Scene currentScene = TITLE_SCREEN;
@@ -50,10 +52,12 @@ public:
     bool startGame = false;
 
     SDL_Texture* asteroidTxt = nullptr;
-    Object top;
-    Object mid[3];
-    Object bot[4];
+    Circle top;
+    Circle mid[3];
+    Circle bot[4];
     Circle moon;
+    Object land;
+    Object water;
 
     // WIN/LOSE //
     SDL_Texture* gameOverTxt = nullptr;
