@@ -127,8 +127,8 @@ update_status ModuleSceneIntro::Update(float dt)
         {
             if (currentScreen == EARTH)
             {
-                land.force.y = -90.0f;
-                water.force.y = -90.0f;
+                //land.force.y = -App->physics->gravity.y;
+                //water.force.y = -App->physics->gravity.y;
                 //if ((land.pos.y + land.collider->rect.h) > (App->renderer->camera.h)) //Bottom bound
                 //{
                 //    land.pos.y = App->renderer->camera.h - land.collider->rect.h - 1;
@@ -230,16 +230,16 @@ update_status ModuleSceneIntro::PostUpdate()
                     if (App->physics->debug)
                     {
                         if (top.collider != nullptr)
-                        App->renderer->DrawQuad(top.collider->rect, 255, 0, 0, 100);
+                        App->renderer->DrawCircle(top.pos.x, top.pos.y,top.radius, 255, 0, 0, 100);
                         for (int i = 0; i != 3; ++i)
                         {
                             if(mid[i].collider != nullptr)
-                            App->renderer->DrawQuad(mid[i].collider->rect, 255, 0, 0, 100);
+                            App->renderer->DrawCircle(mid[i].pos.x,mid[i].pos.y,mid[i].radius, 255, 0, 0, 100);
                         }
                         for (int i = 0; i != 4; ++i)
                         {
                             if(bot[i].collider != nullptr)
-                            App->renderer->DrawQuad(bot[i].collider->rect, 255, 0, 0, 100);
+                            App->renderer->DrawCircle(bot[i].pos.x,bot[i].pos.y,bot[i].radius, 255, 0, 0, 100);
                         }
                     }
                     break;
@@ -250,7 +250,7 @@ update_status ModuleSceneIntro::PostUpdate()
 
                     if (App->physics->debug)
                     {
-                        App->renderer->DrawQuad(moon.collider->rect, 255, 0, 0, 100);
+                        App->renderer->DrawCircle(moon.pos.x,moon.pos.y,moon.radius, 255, 0, 0, 100);
                     }
                     break;
                 }
@@ -375,25 +375,36 @@ void ModuleSceneIntro::DeleteAsteroids()
 
 void ModuleSceneIntro::CreateMoon()
 {
-    moon.mass = 1.0f;
+    moon.mass = 0.0f;
     moon.radius = 186;
     moon.pos.x = 461;
     moon.pos.y = 245;
+    moon.pastPos.x = moon.pos.x;
+    moon.pastPos.y = moon.pos.y;
     moon.shape = Object::Shape::CIRCLE;
-    moon.collider = new Collider({ moon.pos.x - moon.radius,moon.pos.y - moon.radius,moon.radius*2,moon.radius*2 }, Collider::Type::MOON, this);
-    App->physics->AddObject(&moon);
+    if (moon.collider == nullptr)
+    {
+        moon.collider = new Collider({ moon.pos.x - moon.radius,moon.pos.y - moon.radius,moon.radius * 2,moon.radius * 2 }, Collider::Type::MOON, this);
+        App->physics->AddObject(&moon);
+    }
 }
 
 void ModuleSceneIntro::DeleteMoon()
 {
-    App->physics->RemoveObject(&moon);
+    if (moon.collider != nullptr)
+    {
+        App->physics->RemoveObject(&moon);
+        moon.collider = nullptr;
+    }
 }
 
 void ModuleSceneIntro::CreateEarth()
 {
     land.pos.x = 0;
     land.pos.y = 740;
-    land.mass = 1.0f;
+    land.pastPos.x = land.pos.x;
+    land.pastPos.y = land.pos.y;
+    land.mass = 0.0f;
     if (land.collider == nullptr)
     {
         land.collider = new Collider({ land.pos.x,land.pos.y,570,180 }, Collider::Type::SOLID, this);
@@ -401,8 +412,8 @@ void ModuleSceneIntro::CreateEarth()
     }
 
     water.pos.x = 570;
-    water.pos.y = 740;
-    water.mass = 1.0f;
+    water.pos.y = 800;
+    water.mass = 0.0f;
     if (water.collider == nullptr)
     {
         water.collider = new Collider({ water.pos.x,water.pos.y,350,180 }, Collider::Type::WATER, this);
@@ -412,7 +423,16 @@ void ModuleSceneIntro::CreateEarth()
 
 void ModuleSceneIntro::DeleteEarth()
 {
-    App->physics->RemoveObject(&land);
+    if (land.collider != nullptr)
+    {
+        App->physics->RemoveObject(&land);
+        land.collider = nullptr;
+    }
+    if (water.collider != nullptr)
+    {
+        App->physics->RemoveObject(&water);
+        water.collider = nullptr;
+    }
 }
 
 void ModuleSceneIntro::OnCollision(Collider* c1, Collider* c2) {}

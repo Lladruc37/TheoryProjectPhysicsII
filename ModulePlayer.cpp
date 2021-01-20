@@ -28,7 +28,7 @@ bool ModulePlayer::Start()
     height = 56;
     angle = 0.0f;
     player.pos.x = 200;
-    player.pos.y = 100;
+    player.pos.y = 684;
     pastPos.x = player.pos.x;
     pastPos.y = player.pos.y;
     player.force.SetToZero();
@@ -197,7 +197,7 @@ update_status ModulePlayer::PreUpdate()
         if (App->input->GetKey(SDL_SCANCODE_R) == KEY_DOWN)
         {
             player.pos.x = 200;
-            player.pos.y = 100;
+            player.pos.y = 684;
             pastPos.x = player.pos.x;
             pastPos.y = player.pos.y;
             player.force.SetToZero();
@@ -212,6 +212,7 @@ update_status ModulePlayer::PreUpdate()
                 player.collider = new Collider({ player.pos.x,player.pos.y,width,height }, Collider::Type::PLAYER, this);
             }
             App->scene_intro->currentScreen = GameScreen::EARTH;
+            App->scene_intro->CreateEarth();
         }
     }
 
@@ -264,14 +265,15 @@ update_status ModulePlayer::Update(float dt)
             //a.y = 0.0f;
         }
 
-        if (player.speed.y > 200.0f)
-            player.speed.y = 200.0f;
-        else if (player.speed.y < -200.0f)
-            player.speed.y = -200.0f;
-        if (player.speed.x > 200.0f)
-            player.speed.x = 200.0f;
-        else if (player.speed.x < -200.0f)
-            player.speed.x = -200.0f;
+        if (player.speed.y > 500.0f)
+            player.speed.y = 500.0f;
+        else if (player.speed.y < -500.0f)
+            player.speed.y = -500.0f;
+        if (player.speed.x > 500.0f)
+            player.speed.x = 500.0f;
+        else if (player.speed.x < -500.0f)
+            player.speed.x = -500.0f;
+        LOG("%f,%f", player.speed.x,player.speed.y);
     }
     else
     {

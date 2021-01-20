@@ -3,7 +3,8 @@
 #include "Globals.h"
 #include "p2Point.h"
 
-#define WATER_DENSITY 0.003
+#define WATER_DENSITY 0.002
+#define DAMPEN 0.97
 
 class Collider
 {
@@ -88,9 +89,11 @@ private:
 
 	// Checks if two rects are intersecting
 	//bool Intersects(const SDL_Rect& r) const;
-	bool Intersects(Object* A, Object* B) const;
+	bool Intersects(Object* A, Object* B);
 	void ResolveCollisions(Object* A, Object* B); // Requires Raycast for the future
 	void ResetSpeed(Object* A);
+	float ShortestDist(Object* A, Circle* B);
+	float CalculateModule(iPoint A, iPoint B);
 
 public:
 	fPoint gravity;

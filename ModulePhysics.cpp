@@ -165,19 +165,156 @@ void ModulePhysics::UpdateGravity()
     switch (App->scene_intro->currentScreen)
     {
     case GameScreen::EARTH:
+    {
         gravity.x = 0.0f;
-        gravity.y = 90.0f;
+        gravity.y = 200.0f;
         break;
+    }
     case GameScreen::ASTEROIDS:
+    {
         gravity.x = 0.0f;
         gravity.y = 0.0f;
         break;
+    }
     case GameScreen::MOON:
-        gravity.x = 0.0f;
-        gravity.y = 0.0f;
+    {
+        Object* player = nullptr;
+        Circle* moon = nullptr;
+        p2List_item<Object*>* tmp = objects.getFirst();
+        while (tmp != nullptr)
+        {
+            if (tmp->data->collider->type == Collider::Type::PLAYER)
+            {
+                player = tmp->data;
+            }
+            else if (tmp->data->collider->type == Collider::Type::MOON)
+            {
+                moon = (Circle*)tmp->data;
+            }
+            tmp = tmp->next;
+        }
+        //iPoint dif;
+        //dif.x = player->pos.x - moon->pos.x;
+        //dif.y = player->pos.y - moon->pos.y;
+
+
+        //float dist = sqrtf((float)abs(dif.x) * (float)abs(dif.x) + (float)abs(dif.y) * (float)abs(dif.y));
+        //fPoint ratio;
+        //ratio.x = dif.x / dist;
+        //ratio.y = dif.y / dist;
+
+
+
+        iPoint rPos;
+        // find closest X
+        if (player->collider->rect.x > moon->pos.x)
+        {
+            // left
+            rPos.x = player->collider->rect.x;
+        }
+        else if (player->collider->rect.x + player->collider->rect.w < moon->pos.x)
+        {
+            // right
+            rPos.x = player->collider->rect.x + player->collider->rect.w;
+        }
+        else
+        {
+            // inside
+            rPos.x = moon->pos.x;
+        }
+
+        // find closest Y
+        if (player->collider->rect.y > moon->pos.y)
+        {
+            // top
+            rPos.y = player->collider->rect.y;
+        }
+        else if (player->collider->rect.y + player->collider->rect.h < moon->pos.y)
+        {
+            // bot
+            rPos.y = player->collider->rect.y + player->collider->rect.h;
+        }
+        else
+        {
+            // inside
+            rPos.y = moon->pos.y;
+        }
+        //LOG("A: %d,%d B: %d,%d rPos: %d,%d", player->collider->rect.x, player->collider->rect.y, moon->pos.x, moon->pos.y, rPos.x, rPos.y);
+        // compute distance
+        float dist = CalculateModule(moon->pos, rPos);
+        LOG("dist: %f", dist);
+        LOG("ovni: %d,%d moon:%d,%d", rPos.x, rPos.y, moon->pos.x, moon->pos.y);
+
+
+        fPoint dif;
+        dif.x = rPos.x - moon->pos.x;
+        dif.y = rPos.y - moon->pos.y;
+        float otherDist = 500 - dist;
+        if (otherDist <= 0.0f)
+        {
+            otherDist = 0.0f;
+        }
+
+        //gravity.x = 500000 * player->mass / (dif.x * dif.x);
+        //gravity.y = 500000 * player->mass / (dif.y * dif.y);
+
+        if (dif.x > 0.0f && dif.y > 0.0f) //top left
+        {
+            gravity.x = 5000000 * player->mass / -(dif.x * dif.x);
+            gravity.y = 5000000 * player->mass / -(dif.y * dif.y);
+            //gravity.x = -otherDist * cos(dif.x / dist);
+            //gravity.y = -otherDist * sin(dif.y / dist);
+        }
+        else if (dif.x > 0.0f && dif.y < 0.0f) // top right
+        {
+            gravity.x = 5000000 * player->mass / -(dif.x * dif.x);
+            gravity.y = 5000000 * player->mass / (dif.y * dif.y);
+            //gravity.x = -otherDist * cos(dif.x / dist);
+            //gravity.y = otherDist * sin(-dif.y / dist);
+        }
+        else if (dif.x < 0.0f && dif.y > 0.0f) //bot left
+        {
+            gravity.x = 5000000 * player->mass / (dif.x * dif.x);
+            gravity.y = 5000000 * player->mass / -(dif.y * dif.y);
+            //gravity.x = otherDist * cos(dif.x / dist);
+            //gravity.y = -otherDist * sin(dif.y / dist);
+        }
+        else if (dif.x < 0.0f && dif.y < 0.0f) //bot right
+        {
+            gravity.x = 5000000 * player->mass / (dif.x * dif.x);
+            gravity.y = 5000000 * player->mass / (dif.y * dif.y);
+            //gravity.x = otherDist * cos(dif.x / dist);
+            //gravity.y = otherDist * sin(-dif.y / dist);
+        }
+        //gravity.x = gravity.x / player->mass;
+        //gravity.y = gravity.y / player->mass;
+        LOG("Gravity: %f,%f", gravity.x, gravity.y);
+
+        if (gravity.x > 180.0f)
+        {
+            gravity.x = 180.0f;
+        }
+        else if (gravity.x < -180.0f)
+        {
+            gravity.x = -180.0f;
+        }
+        if (gravity.y > 180.0f)
+        {
+            gravity.y = 180.0f;
+        }
+        else if (gravity.y < -180.0f)
+        {
+            gravity.y = -180.0f;
+        }
+        LOG("Gravity: %f,%f", gravity.x, gravity.y);
+        //gravity.x = 0.0f;
+        //gravity.y = 0.0f;
         break;
+    }
     default:
+    {
         break;
+    }
     }
 }
 
@@ -189,8 +326,8 @@ void ModulePhysics::UpdatePhysics(Object* object, float dt)
 
     fPoint a = Force2Accel(object->force, object->mass);
     // verlet
-    object->pos.x = object->pos.x + object->speed.x * dt + (a.x * dt * dt * 0.5);
-    object->speed.x = object->speed.x + (a.x * dt);
+    object->pos.x = object->pos.x + object->speed.x * dt + ((gravity.x + a.x) * dt * dt * 0.5);
+    object->speed.x = object->speed.x + ((gravity.x + a.x) * dt);
     object->pos.y = object->pos.y + object->speed.y * dt + ((gravity.y + a.y) * dt * dt * 0.5);
     object->speed.y = object->speed.y + ((gravity.y + a.y) * dt);
 
@@ -229,22 +366,23 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
             //BUOYANCY
             if (A->collider->type == Collider::Type::WATER)
             {
-                float volum;
+                float volume;
                 if (A->collider->rect.y <= B->collider->rect.y)
                 {
-                    volum = B->collider->rect.h * B->collider->rect.w;
+                    volume = B->collider->rect.h * B->collider->rect.w;
                 }
                 else
                 {
-                    volum = (float)abs((760 - B->collider->rect.y) - B->collider->rect.h) * B->collider->rect.w;
+                    volume = (float)abs((A->collider->rect.y - B->collider->rect.y) - B->collider->rect.h) * B->collider->rect.w;
                 }
-                float tmpForce = B->force.y + (B->mass * gravity.y - (WATER_DENSITY)*volum * gravity.y) / 2;
-                if (tmpForce < -400.0f)
-                {
-                    tmpForce = -400.0f;
-                }
+                float tmpForce = B->force.y + (B->mass * gravity.y - (WATER_DENSITY)*volume * gravity.y);
+                B->speed.y *= DAMPEN;
+                //if (tmpForce < -600.0f)
+                //{
+                //    tmpForce = -600.0f;
+                //}
                B->force.y = tmpForce;
-               LOG("Force: %f, volum: %f", B->force.y, volum );
+               LOG("Force: %f, volum: %f", B->force.y, volume );
             }
             else
             {
@@ -253,16 +391,16 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
         }
         else 
         {
-            float heightDif;
-            if (B->pos.y <= A->pos.y)
-            {
-                heightDif = B->collider->rect.h;
-            }
-            else
-            {
-                heightDif = A->collider->rect.h;
-            }
-            float dist = (float)abs(B->pos.y - A->pos.y);
+            //float heightDif;
+            //if (B->pos.y <= A->pos.y)
+            //{
+            //    heightDif = B->collider->rect.h;
+            //}
+            //else
+            //{
+            //    heightDif = A->collider->rect.h;
+            //}
+            //float dist = (float)abs(B->pos.y - A->pos.y);
 
             fPoint frameDifB;
             frameDifB.x = B->pos.x - B->pastPos.x;
@@ -276,7 +414,7 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
             iPoint tmpA;
             tmpA.x = A->pos.x;
             tmpA.y = A->pos.y;
-            while (dist < heightDif)
+            while (Intersects(A,B)/*dist < heightDif*/)
             {
                 if (frameDifB.x > 0)
                 {
@@ -320,8 +458,13 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
                     frameDifA.y++;
                 }
 
-                dist = (float)abs(tmpB.y - tmpA.y);
-                LOG("%d,%d - %d,%d = %f", tmpB.x, tmpB.y, tmpA.x, tmpA.y, dist);
+                //dist = (float)abs(tmpB.y - tmpA.y);
+                //LOG("%d,%d - %d,%d = %f", tmpB.x, tmpB.y, tmpA.x, tmpA.y, dist);
+                LOG("%d,%d - %d,%d", tmpB.x, tmpB.y, tmpA.x, tmpA.y);
+                A->collider->rect.x = tmpA.x;
+                A->collider->rect.y = tmpA.y;
+                B->collider->rect.x = tmpB.x;
+                B->collider->rect.y = tmpB.y;
             }
             B->pos.x = tmpB.x;
             B->pos.y = tmpB.y;
@@ -371,7 +514,7 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
         }
 
         // compute distance
-        float dist = sqrtf((float)abs(B->pos.x - rPos.x) * (float)abs(B->pos.x - rPos.x) + (float)abs(B->pos.y - rPos.y) * (float)abs(B->pos.y - rPos.y));
+        float dist = CalculateModule(rPos, B->pos);
 
         fPoint frameDifB;
         frameDifB.x = B->pos.x - B->pastPos.x;
@@ -428,14 +571,14 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
                 tmpA.y++;
                 frameDifA.y++;
             }
-
-            dist = sqrtf((float)abs(tmpB.x - tmpA.x) * (float)abs(tmpB.x - tmpA.x) + (float)abs(tmpB.y - tmpA.y) * (float)abs(tmpB.y - tmpA.y));
+            dist = CalculateModule(tmpA, tmpB);
             LOG("%d,%d - %d,%d = %f", tmpB.x, tmpB.y, tmpA.x, tmpA.y, dist);
         }
         B->pos.x = tmpB.x;
         B->pos.y = tmpB.y;
         A->pos.x += tmpA.x - rPos.x;
         A->pos.y += tmpA.y - rPos.y;
+        ResetSpeed(A);
     }
     else if (A->shape == Object::Shape::CIRCLE && B->shape == Object::Shape::RECT)
     {
@@ -445,7 +588,7 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
     {
         Circle* circleA = (Circle*)A;
         Circle* circleB = (Circle*)B;
-        float dist = sqrtf(abs(B->pos.x - A->pos.x) * abs(B->pos.x - A->pos.x) + abs(B->pos.y - A->pos.y) * abs(B->pos.y - A->pos.y));
+        float dist = CalculateModule(A->pos, B->pos);
 
         fPoint frameDifB;
         frameDifB.x = B->pos.x - B->pastPos.x;
@@ -464,38 +607,46 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
             if (frameDifB.x > 0)
             {
                 tmpB.x--;
+                frameDifB.x--;
             }
             else
             {
                 tmpB.x++;
+                frameDifB.x++;
             }
             if (frameDifB.y > 0)
             {
                 tmpB.y--;
+                frameDifB.y--;
             }
             else
             {
                 tmpB.y++;
+                frameDifB.y++;
             }
 
             if (frameDifA.x > 0)
             {
                 tmpA.x--;
+                frameDifA.x--;
             }
             else
             {
                 tmpA.x++;
+                frameDifA.x++;
             }
             if (frameDifA.y > 0)
             {
                 tmpA.y--;
+                frameDifA.y--;
             }
             else
             {
                 tmpA.y++;
+                frameDifA.y++;
             }
-
-            dist = sqrtf((float)abs(tmpB.x - tmpA.x) * (float)abs(tmpB.x - tmpA.x) + (float)abs(tmpB.y - tmpA.y) * (float)abs(tmpB.y - tmpA.y));
+            dist = CalculateModule(tmpA, tmpB);
+            //dist = sqrtf((float)abs(tmpB.x - tmpA.x) * (float)abs(tmpB.x - tmpA.x) + (float)abs(tmpB.y - tmpA.y) * (float)abs(tmpB.y - tmpA.y));
         }
         B->pos.x = tmpB.x;
         B->pos.y = tmpB.y;
@@ -521,6 +672,53 @@ void ModulePhysics::RemoveObject(Object* object)
     objects.del(tmp);
 }
 
+float ModulePhysics::CalculateModule(iPoint A, iPoint B)
+{
+    float dist = sqrtf((float)abs(B.x - A.x) * (float)abs(B.x - A.x) + (float)abs(B.y - A.y) * (float)abs(B.y - A.y));
+    return dist;
+}
+
+float ModulePhysics::ShortestDist(Object* A, Circle* B)
+{
+    iPoint rPos;
+    // find closest X
+    if (A->collider->rect.x > B->pos.x)
+    {
+        // left
+        rPos.x = A->collider->rect.x;
+    }
+    else if (A->collider->rect.x + A->collider->rect.w < B->pos.x)
+    {
+        // right
+        rPos.x = A->collider->rect.x + A->collider->rect.w;
+    }
+    else
+    {
+        // inside
+        rPos.x = B->pos.x;
+    }
+
+    // find closest Y
+    if (A->collider->rect.y > B->pos.y)
+    {
+        // top
+        rPos.y = A->collider->rect.y;
+    }
+    else if (A->collider->rect.y + A->collider->rect.h < B->pos.y)
+    {
+        // bot
+        rPos.y = A->collider->rect.y + A->collider->rect.h;
+    }
+    else
+    {
+        // inside
+        rPos.y = B->pos.y;
+    }
+    LOG("A: %d,%d B: %d,%d rPos: %d,%d", A->collider->rect.x, A->collider->rect.y, B->pos.x, B->pos.y, rPos.x, rPos.y);
+    // compute distance
+    return CalculateModule(rPos, B->pos);
+}
+
 void Collider::SetPos(int x, int y, int w, int h)
 {
     rect.x = x;
@@ -529,7 +727,7 @@ void Collider::SetPos(int x, int y, int w, int h)
     rect.h = h;
 }
 
-bool ModulePhysics::Intersects(Object* A, Object* B) const
+bool ModulePhysics::Intersects(Object* A, Object* B)
 {
     if (A->shape == Object::Shape::RECT && B->shape == Object::Shape::RECT)
     {
@@ -541,43 +739,7 @@ bool ModulePhysics::Intersects(Object* A, Object* B) const
     else if (A->shape == Object::Shape::RECT && B->shape == Object::Shape::CIRCLE)
     {
         Circle* circle = (Circle*)B;
-        iPoint rPos;
-        // find closest X
-        if (A->collider->rect.x > B->pos.x)
-        {
-            // left
-            rPos.x = A->collider->rect.x;
-        }
-        else if (A->collider->rect.x + A->collider->rect.w < B->pos.x)
-        {
-            // right
-            rPos.x = A->collider->rect.x + A->collider->rect.w;
-        }
-        else
-        {
-            // inside
-            rPos.x = B->pos.x;
-        }
-
-        // find closest Y
-        if (A->collider->rect.y > B->pos.y)
-        {
-            // top
-            rPos.y = A->collider->rect.y;
-        }
-        else if (A->collider->rect.y + A->collider->rect.h < B->pos.y)
-        {
-            // bot
-            rPos.y = A->collider->rect.y + A->collider->rect.h;
-        }
-        else
-        {
-            // inside
-            rPos.y = B->pos.y;
-        }
-        LOG("A: %d,%d B: %d,%d rPos: %d,%d", A->collider->rect.x, A->collider->rect.y, B->pos.x, B->pos.y, rPos.x, rPos.y);
-        // compute distance
-        float dist = sqrtf((float)abs(B->pos.x - rPos.x) * (float)abs(B->pos.x - rPos.x) + (float)abs(B->pos.y - rPos.y) * (float)abs(B->pos.y - rPos.y));
+        float dist = ShortestDist(A, circle);
         LOG("dist: %f", dist);
         return (dist < circle->radius);
     }
@@ -589,7 +751,7 @@ bool ModulePhysics::Intersects(Object* A, Object* B) const
     {
         Circle* circleA = (Circle*)A;
         Circle* circleB = (Circle*)B;
-        float dist = sqrtf(abs(B->pos.x - A->pos.x) * abs(B->pos.x - A->pos.x) + abs(B->pos.y - A->pos.y) * abs(B->pos.y - A->pos.y));
+        float dist = CalculateModule(A->pos, B->pos);
         return (dist < (circleA->radius + circleB->radius));
     }
 }

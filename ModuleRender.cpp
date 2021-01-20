@@ -164,7 +164,7 @@ bool ModuleRender::DrawLine(int x1, int y1, int x2, int y2, Uint8 r, Uint8 g, Ui
 	return ret;
 }
 
-bool ModuleRender::DrawCircle(int x, int y, int radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool use_camera)
+bool ModuleRender::DrawCircle(int x, int y, int radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a,bool filled, bool use_camera)
 {
 	bool ret = true;
 
@@ -190,5 +190,52 @@ bool ModuleRender::DrawCircle(int x, int y, int radius, Uint8 r, Uint8 g, Uint8 
 		ret = false;
 	}
 
-	return ret;
+	if (filled)
+	{
+		return FillCircle(x, y, radius, r, g, b, a, use_camera);
+	}
+	else
+	{
+		return ret;
+	}
+}
+
+bool ModuleRender::FillCircle(int x, int y, int radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool use_camera)
+{
+	int offsetx, offsety, d;
+	bool status;
+
+	offsetx = 0;
+	offsety = radius;
+	d = radius - 1;
+	status = 0;
+
+	while (offsety >= offsetx) {
+
+		status = DrawLine(x - offsety, y + offsetx, x + offsety, y + offsetx,r,g,b,a,use_camera);
+		status = DrawLine(x - offsetx, y + offsety, x + offsetx, y + offsety,r,g,b,a,use_camera);
+		status = DrawLine(x - offsetx, y - offsety, x + offsetx, y - offsety,r,g,b,a,use_camera);
+		status = DrawLine(x - offsety, y - offsetx, x + offsety, y - offsetx,r,g,b,a,use_camera);
+
+		if (status == false)
+		{
+			break;
+		}
+
+		if (d >= 2 * offsetx) {
+			d -= 2 * offsetx + 1;
+			offsetx += 1;
+		}
+		else if (d < 2 * (radius - offsety)) {
+			d += 2 * offsety - 1;
+			offsety -= 1;
+		}
+		else {
+			d += 2 * (offsety - offsetx - 1);
+			offsety -= 1;
+			offsetx += 1;
+		}
+	}
+
+	return status;
 }
