@@ -96,7 +96,7 @@ update_status ModulePhysics::PreUpdate()
 
             c2 = tmp2->data->collider;
 
-            if (Intersects(tmp->data,tmp2->data) && matrix[c1->type][c2->type])
+            if (Intersects(tmp->data,tmp2->data) && matrix[c1->type][c2->type] && App->player->godMode == false)
             {
                 ResolveCollisions(tmp->data, tmp2->data);
                 if (c1->listener)
