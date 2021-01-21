@@ -3,8 +3,8 @@
 #include "Globals.h"
 #include "p2Point.h"
 
-#define WATER_DENSITY 0.002
-#define DAMPEN 0.97
+#define WATER_DENSITY 0.0025 //0.002
+#define DAMPEN 0.975 //0.97
 
 class Collider
 {
@@ -94,6 +94,7 @@ private:
 	void ResetSpeed(Object* A);
 	float ShortestDist(Object* A, Circle* B);
 	float CalculateModule(iPoint A, iPoint B);
+	void Buoyancy(Object* A, Object* B);
 
 public:
 	fPoint gravity;
