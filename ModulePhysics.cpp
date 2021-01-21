@@ -752,6 +752,7 @@ bool ModulePhysics::Intersects(Object* A, Object* B)
         Circle* circleA = (Circle*)A;
         Circle* circleB = (Circle*)B;
         float dist = CalculateModule(A->pos, B->pos);
+        LOG("dist: %f", dist);
         return (dist < (circleA->radius + circleB->radius));
     }
 }

@@ -28,16 +28,16 @@ public:
     float dtAnim;
     //Collider* collider = nullptr;
 
-    Object player;
+    Circle player;
     //iPoint position;
     //iPoint nextPos;
-    iPoint pastPos;
-    int width;
-    int height;
-    float angle;
+    //iPoint pastPos;
+    //int width;
+    //int height;
+    //float angle;
     //fPoint speed;
     //fPoint nextSpeed;
-    fPoint pastSpeed;
+    //fPoint pastSpeed;
     //fPoint totalForce;
     //int mass;
     bool isDestroyed;

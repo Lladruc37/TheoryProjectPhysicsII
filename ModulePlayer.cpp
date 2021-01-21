@@ -24,18 +24,18 @@ bool ModulePlayer::Start()
     explosionAnim.Reset();
 
     player.mass = 2;
-    width = 120;
-    height = 56;
-    angle = 0.0f;
+    player.angle = 0.0f;
     player.pos.x = 200;
-    player.pos.y = 684;
-    pastPos.x = player.pos.x;
-    pastPos.y = player.pos.y;
+    player.pos.y = 674;
+    player.radius = 28;
+    player.pastPos.x = player.pos.x;
+    player.pastPos.y = player.pos.y;
     player.force.SetToZero();
 
     if (player.collider == nullptr)
     {
-        player.collider = new Collider({ player.pos.x,player.pos.y,width,height }, Collider::Type::PLAYER, this);
+        player.collider = new Collider({ player.pos.x - player.radius,player.pos.y - player.radius,player.radius * 2,player.radius * 2 }, Collider::Type::PLAYER, this);
+        player.shape = Object::Shape::CIRCLE;
     }
 
     App->physics->AddObject(&player);
@@ -82,11 +82,11 @@ update_status ModulePlayer::PreUpdate()
     {
         if (App->input->GetKey(SDL_SCANCODE_Q) == KEY_REPEAT)
         {
-            angle -= 1.0f;
+            player.angle -= 1.0f;
         }
         if (App->input->GetKey(SDL_SCANCODE_E) == KEY_REPEAT)
         {
-            angle += 1.0f;
+            player.angle += 1.0f;
         }
         if (App->input->GetKey(SDL_SCANCODE_W) == KEY_REPEAT)
         {
@@ -130,6 +130,11 @@ update_status ModulePlayer::PreUpdate()
                 isMovingLeft = true;
                 movingChannelTwo = App->audio->PlayFx(movingFx, -1);
             }
+            
+            if (player.angle >= -20.0f)
+            {
+                player.angle -= 1.0f;
+            }
         }
         else
         {
@@ -151,17 +156,17 @@ update_status ModulePlayer::PreUpdate()
                 totalForce.y = 250.0f;
             }*/
 
-            if (!isMovingRight)
+            if (!isMovingDown)
             {
-                isMovingRight = true;
+                isMovingDown = true;
                 movingChannelThree = App->audio->PlayFx(movingFx, -1);
             }
         }
         else
         {
-            if (isMovingRight)
+            if (isMovingDown)
             {
-                isMovingRight = false;
+                isMovingDown = false;
                 App->audio->StopFx(movingChannelThree);
             }
         }
@@ -177,17 +182,22 @@ update_status ModulePlayer::PreUpdate()
             player.force.x = 500.0f * player.mass;
             //}
 
-            if (!isMovingDown)
+            if (!isMovingRight)
             {
-                isMovingDown = true;
+                isMovingRight = true;
                 movingChannelFour = App->audio->PlayFx(movingFx, -1);
+            }
+
+            if (player.angle <= 20.0f)
+            {
+                player.angle += 1.0f;
             }
         }
         else
         {
-            if (isMovingDown)
+            if (isMovingRight)
             {
-                isMovingDown = false;
+                isMovingRight = false;
                 App->audio->StopFx(movingChannelFour);
             }
         }
@@ -198,8 +208,8 @@ update_status ModulePlayer::PreUpdate()
         {
             player.pos.x = 200;
             player.pos.y = 684;
-            pastPos.x = player.pos.x;
-            pastPos.y = player.pos.y;
+            player.pastPos.x = player.pos.x;
+            player.pastPos.y = player.pos.y;
             player.force.SetToZero();
             isMovingUp = false;
             isMovingLeft = false;
@@ -209,7 +219,7 @@ update_status ModulePlayer::PreUpdate()
             explosionAnim.Reset();
             if (player.collider == nullptr)
             {
-                player.collider = new Collider({ player.pos.x,player.pos.y,width,height }, Collider::Type::PLAYER, this);
+                player.collider = new Collider({ player.pos.x - player.radius,player.pos.y - player.radius,player.radius * 2,player.radius * 2 }, Collider::Type::PLAYER, this);
             }
             App->scene_intro->currentScreen = GameScreen::EARTH;
             App->scene_intro->CreateEarth();
@@ -233,34 +243,34 @@ update_status ModulePlayer::Update(float dt)
         App->physics->ResolveCollisions(position, nextPos, speed, nextSpeed, width, height);
         collider->SetPos(position.x, position.y, width, height);
         */
-        pastPos = player.pos;
-        pastSpeed = player.speed;
+        //player.pastPos = player.pos;
+        //player.pastSpeed = player.speed;
         //App->physics->UpdatePhysics(&player, dt);
         //App->physics->ResolveCollisions(&player, pastPos, pastSpeed, width, height);
         //player.collider->SetPos(player.pos.x, player.pos.y, width, height);
 
         // Player boundries
-        if (player.pos.x <= 0) //Left bound
+        if ((player.pos.x - player.radius) <= 0) //Left bound
         {
-            player.pos.x = 1;
+            player.pos.x = player.radius + 1;
             //speed.x = 0.0f;
             //a.x = 0.0f;
         }
-        if ((player.pos.x + width) > (App->renderer->camera.w)) //Right bound
+        if ((player.pos.x + player.radius) > (App->renderer->camera.w)) //Right bound
         {
-            player.pos.x = App->renderer->camera.w - width - 1;
+            player.pos.x = App->renderer->camera.w - player.radius - 1;
             //speed.x = 0.0f;
             //a.x = 0.0f;
         }
-        if (player.pos.y <= 0 && App->scene_intro->currentScreen == GameScreen::MOON) //Up bound
+        if ((player.pos.y - player.radius) <= 0 && App->scene_intro->currentScreen == GameScreen::MOON) //Up bound
         {
-            player.pos.y = 1;
+            player.pos.y = player.radius + 1;
             //speed.y = 0.0f;
             //a.y = 0.0f;
         }
-        if ((player.pos.y + height) > (App->renderer->camera.h) && App->scene_intro->currentScreen == GameScreen::EARTH) //Bottom bound
+        if ((player.pos.y + player.radius) > (App->renderer->camera.h) && App->scene_intro->currentScreen == GameScreen::EARTH) //Bottom bound
         {
-            player.pos.y = App->renderer->camera.h - height - 1;
+            player.pos.y = App->renderer->camera.h - player.radius - 1;
             //speed.y = 0.0f;
             //a.y = 0.0f;
         }
@@ -304,15 +314,15 @@ update_status ModulePlayer::PostUpdate()
     if (isDestroyed)
     {
         if(!explosionAnim.HasFinished())
-        App->renderer->Blit(explosion, player.pos.x - 41, player.pos.y - 73, false, 0, &explosionAnim.GetCurrentFrame());
+        App->renderer->Blit(explosion, player.pos.x - 41 - 60, player.pos.y - 73 - 28, false, 0, &explosionAnim.GetCurrentFrame());
     }
     else
     {
-        App->renderer->Blit(playerTex, player.pos.x, player.pos.y, false, (double)angle);
+        App->renderer->Blit(playerTex, player.pos.x - 60, player.pos.y - 28, false, (double)player.angle);
     }
     
     if (App->physics->debug && player.collider != nullptr)
-        App->renderer->DrawQuad(player.collider->rect, 0, 255, 0, 100);
+        App->renderer->DrawCircle(player.pos.x, player.pos.y, player.radius, 0, 255, 0, 100);
 
     return UPDATE_CONTINUE;
 };
@@ -325,6 +335,11 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
         {
             if (c2->type == Collider::Type::SOLID)
             {
+                if(abs((int)player.pastSpeed.y) >= 300.0f)
+                {
+                    isDestroyed = true;
+                    App->audio->PlayFx(explosionFx);
+                }
                 LOG("Solid!");
             }
         }

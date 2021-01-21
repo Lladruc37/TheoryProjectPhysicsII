@@ -66,9 +66,9 @@ update_status ModuleSceneIntro::PreUpdate()
         }
         case GAME:
         {
-            if ((App->player->player.pos.y + App->player->height / 2) <= 0)
+            if ((App->player->player.pos.y + App->player->player.radius / 2) <= 0)
             {
-                App->player->player.pos.y = App->renderer->camera.h - App->player->height / 2;
+                App->player->player.pos.y = App->renderer->camera.h - App->player->player.radius / 2;
                 switch (currentScreen)
                 {
                 case EARTH:
