@@ -14,6 +14,8 @@ public:
 	ModulePlayer(Application* app, bool start_enabled = false);
 	virtual ~ModulePlayer();
 
+    void CreatePlayer();
+    void DeletePlayer();
 	bool Start();
     update_status PreUpdate();
 	update_status Update(float dt);
@@ -42,15 +44,23 @@ public:
     //int mass;
     bool isDestroyed;
     bool godMode;
+    bool checkpoint;
+    bool victory;
+    bool onceMusic;
+
+    float flagAngle;
+    iPoint flagPosition;
+    uint flagFx;
+
 
     bool isMovingUp;
     bool isMovingLeft;
     bool isMovingRight;
     bool isMovingDown;
-    int movingFx;
-    int explosionFx;
-    int movingChannelOne;
-    int movingChannelTwo;
-    int movingChannelThree;
-    int movingChannelFour;
+    uint movingFx;
+    uint explosionFx;
+    uint movingChannelOne;
+    uint movingChannelTwo;
+    uint movingChannelThree;
+    uint movingChannelFour;
 };

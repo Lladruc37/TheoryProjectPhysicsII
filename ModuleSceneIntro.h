@@ -38,7 +38,7 @@ public:
     void DeleteAsteroids();
     void CreateMoon();
     void DeleteMoon();
-    void CreateEarth();
+    void CreateEarth(bool checkpoint);
     void DeleteEarth();
 
 public:
@@ -47,9 +47,11 @@ public:
 
     // GAME //
     SDL_Texture* bgEarth = nullptr;
+    SDL_Texture* bgWater = nullptr;
     SDL_Texture* bgAsteroids = nullptr;
     SDL_Texture* bgMoon = nullptr;
     bool startGame = false;
+    SDL_Texture* flag;
 
     SDL_Texture* asteroidTxt = nullptr;
     Circle top;
@@ -61,6 +63,7 @@ public:
 
     // WIN/LOSE //
     SDL_Texture* gameOverTxt = nullptr;
+    SDL_Texture* victoryTxt = nullptr;
 
     // TITLE SCREEN //
     SDL_Texture* backgroundTitle = nullptr;

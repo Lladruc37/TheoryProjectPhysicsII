@@ -47,6 +47,7 @@ bool ModulePhysics::Start()
 	LOG("Creating Physics 2D environment");
     gravity.x = 0.0f;
     gravity.y = 0.0f;
+    debug = false;
 	return true;
 }
 
@@ -146,8 +147,13 @@ update_status ModulePhysics::PostUpdate()
 bool ModulePhysics::CleanUp()
 {
     LOG("Freeing all colliders");
-
-    objects.clear();
+    p2List_item<Object*>* tmp = objects.getFirst();
+    while (tmp != nullptr)
+    {
+        p2List_item<Object*>* tmpNext = tmp->next;
+        RemoveObject(tmp->data);
+        tmp = tmpNext;
+    }
 
 	return true;
 }
@@ -193,122 +199,125 @@ void ModulePhysics::UpdateGravity()
             }
             tmp = tmp->next;
         }
-        //iPoint dif;
-        //dif.x = player->pos.x - moon->pos.x;
-        //dif.y = player->pos.y - moon->pos.y;
+        if (player != nullptr)
+        {
+            //iPoint dif;
+            //dif.x = player->pos.x - moon->pos.x;
+            //dif.y = player->pos.y - moon->pos.y;
 
 
-        //float dist = sqrtf((float)abs(dif.x) * (float)abs(dif.x) + (float)abs(dif.y) * (float)abs(dif.y));
-        //fPoint ratio;
-        //ratio.x = dif.x / dist;
-        //ratio.y = dif.y / dist;
+            //float dist = sqrtf((float)abs(dif.x) * (float)abs(dif.x) + (float)abs(dif.y) * (float)abs(dif.y));
+            //fPoint ratio;
+            //ratio.x = dif.x / dist;
+            //ratio.y = dif.y / dist;
 
 
 
-        iPoint rPos;
-        // find closest X
-        if (player->collider->rect.x > moon->pos.x)
-        {
-            // left
-            rPos.x = player->collider->rect.x;
-        }
-        else if (player->collider->rect.x + player->collider->rect.w < moon->pos.x)
-        {
-            // right
-            rPos.x = player->collider->rect.x + player->collider->rect.w;
-        }
-        else
-        {
-            // inside
-            rPos.x = moon->pos.x;
-        }
+            iPoint rPos;
+            // find closest X
+            if (player->collider->rect.x > moon->pos.x)
+            {
+                // left
+                rPos.x = player->collider->rect.x;
+            }
+            else if (player->collider->rect.x + player->collider->rect.w < moon->pos.x)
+            {
+                // right
+                rPos.x = player->collider->rect.x + player->collider->rect.w;
+            }
+            else
+            {
+                // inside
+                rPos.x = moon->pos.x;
+            }
 
-        // find closest Y
-        if (player->collider->rect.y > moon->pos.y)
-        {
-            // top
-            rPos.y = player->collider->rect.y;
-        }
-        else if (player->collider->rect.y + player->collider->rect.h < moon->pos.y)
-        {
-            // bot
-            rPos.y = player->collider->rect.y + player->collider->rect.h;
-        }
-        else
-        {
-            // inside
-            rPos.y = moon->pos.y;
-        }
-        //LOG("A: %d,%d B: %d,%d rPos: %d,%d", player->collider->rect.x, player->collider->rect.y, moon->pos.x, moon->pos.y, rPos.x, rPos.y);
-        // compute distance
-        float dist = CalculateModule(moon->pos, rPos);
-        LOG("dist: %f", dist);
-        LOG("ovni: %d,%d moon:%d,%d", rPos.x, rPos.y, moon->pos.x, moon->pos.y);
+            // find closest Y
+            if (player->collider->rect.y > moon->pos.y)
+            {
+                // top
+                rPos.y = player->collider->rect.y;
+            }
+            else if (player->collider->rect.y + player->collider->rect.h < moon->pos.y)
+            {
+                // bot
+                rPos.y = player->collider->rect.y + player->collider->rect.h;
+            }
+            else
+            {
+                // inside
+                rPos.y = moon->pos.y;
+            }
+            //LOG("A: %d,%d B: %d,%d rPos: %d,%d", player->collider->rect.x, player->collider->rect.y, moon->pos.x, moon->pos.y, rPos.x, rPos.y);
+            // compute distance
+            float dist = CalculateModule(moon->pos, rPos);
+            //LOG("dist: %f", dist);
+            //LOG("ovni: %d,%d moon:%d,%d", rPos.x, rPos.y, moon->pos.x, moon->pos.y);
 
 
-        fPoint dif;
-        dif.x = rPos.x - moon->pos.x;
-        dif.y = rPos.y - moon->pos.y;
-        float otherDist = 500 - dist;
-        if (otherDist <= 0.0f)
-        {
-            otherDist = 0.0f;
-        }
+            fPoint dif;
+            dif.x = rPos.x - moon->pos.x;
+            dif.y = rPos.y - moon->pos.y;
+            float otherDist = 500 - dist;
+            if (otherDist <= 0.0f)
+            {
+                otherDist = 0.0f;
+            }
 
-        //gravity.x = 500000 * player->mass / (dif.x * dif.x);
-        //gravity.y = 500000 * player->mass / (dif.y * dif.y);
+            //gravity.x = 500000 * player->mass / (dif.x * dif.x);
+            //gravity.y = 500000 * player->mass / (dif.y * dif.y);
 
-        if (dif.x > 0.0f && dif.y > 0.0f) //top left
-        {
-            gravity.x = 5000000 * player->mass / -(dif.x * dif.x);
-            gravity.y = 5000000 * player->mass / -(dif.y * dif.y);
-            //gravity.x = -otherDist * cos(dif.x / dist);
-            //gravity.y = -otherDist * sin(dif.y / dist);
-        }
-        else if (dif.x > 0.0f && dif.y < 0.0f) // top right
-        {
-            gravity.x = 5000000 * player->mass / -(dif.x * dif.x);
-            gravity.y = 5000000 * player->mass / (dif.y * dif.y);
-            //gravity.x = -otherDist * cos(dif.x / dist);
-            //gravity.y = otherDist * sin(-dif.y / dist);
-        }
-        else if (dif.x < 0.0f && dif.y > 0.0f) //bot left
-        {
-            gravity.x = 5000000 * player->mass / (dif.x * dif.x);
-            gravity.y = 5000000 * player->mass / -(dif.y * dif.y);
-            //gravity.x = otherDist * cos(dif.x / dist);
-            //gravity.y = -otherDist * sin(dif.y / dist);
-        }
-        else if (dif.x < 0.0f && dif.y < 0.0f) //bot right
-        {
-            gravity.x = 5000000 * player->mass / (dif.x * dif.x);
-            gravity.y = 5000000 * player->mass / (dif.y * dif.y);
-            //gravity.x = otherDist * cos(dif.x / dist);
-            //gravity.y = otherDist * sin(-dif.y / dist);
-        }
-        //gravity.x = gravity.x / player->mass;
-        //gravity.y = gravity.y / player->mass;
-        LOG("Gravity: %f,%f", gravity.x, gravity.y);
+            if (dif.x > 0.0f && dif.y > 0.0f) //top left
+            {
+                gravity.x = 5000000 * player->mass / -(dif.x * dif.x);
+                gravity.y = 5000000 * player->mass / -(dif.y * dif.y);
+                //gravity.x = -otherDist * cos(dif.x / dist);
+                //gravity.y = -otherDist * sin(dif.y / dist);
+            }
+            else if (dif.x > 0.0f && dif.y < 0.0f) // top right
+            {
+                gravity.x = 5000000 * player->mass / -(dif.x * dif.x);
+                gravity.y = 5000000 * player->mass / (dif.y * dif.y);
+                //gravity.x = -otherDist * cos(dif.x / dist);
+                //gravity.y = otherDist * sin(-dif.y / dist);
+            }
+            else if (dif.x < 0.0f && dif.y > 0.0f) //bot left
+            {
+                gravity.x = 5000000 * player->mass / (dif.x * dif.x);
+                gravity.y = 5000000 * player->mass / -(dif.y * dif.y);
+                //gravity.x = otherDist * cos(dif.x / dist);
+                //gravity.y = -otherDist * sin(dif.y / dist);
+            }
+            else if (dif.x < 0.0f && dif.y < 0.0f) //bot right
+            {
+                gravity.x = 5000000 * player->mass / (dif.x * dif.x);
+                gravity.y = 5000000 * player->mass / (dif.y * dif.y);
+                //gravity.x = otherDist * cos(dif.x / dist);
+                //gravity.y = otherDist * sin(-dif.y / dist);
+            }
+            //gravity.x = gravity.x / player->mass;
+            //gravity.y = gravity.y / player->mass;
+            //LOG("Gravity: %f,%f", gravity.x, gravity.y);
 
-        if (gravity.x > 180.0f)
-        {
-            gravity.x = 180.0f;
+            if (gravity.x > 180.0f)
+            {
+                gravity.x = 180.0f;
+            }
+            else if (gravity.x < -180.0f)
+            {
+                gravity.x = -180.0f;
+            }
+            if (gravity.y > 180.0f)
+            {
+                gravity.y = 180.0f;
+            }
+            else if (gravity.y < -180.0f)
+            {
+                gravity.y = -180.0f;
+            }
+            //LOG("Gravity: %f,%f", gravity.x, gravity.y);
+            //gravity.x = 0.0f;
+            //gravity.y = 0.0f;
         }
-        else if (gravity.x < -180.0f)
-        {
-            gravity.x = -180.0f;
-        }
-        if (gravity.y > 180.0f)
-        {
-            gravity.y = 180.0f;
-        }
-        else if (gravity.y < -180.0f)
-        {
-            gravity.y = -180.0f;
-        }
-        LOG("Gravity: %f,%f", gravity.x, gravity.y);
-        //gravity.x = 0.0f;
-        //gravity.y = 0.0f;
         break;
     }
     default:
@@ -632,6 +641,7 @@ void ModulePhysics::AddObject(Object* object)
 void ModulePhysics::RemoveObject(Object* object)
 {
     p2List_item<Object*>* tmp = objects.findNode(object);
+    object->collider = nullptr;
     objects.del(tmp);
 }
 

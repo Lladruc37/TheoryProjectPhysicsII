@@ -3,7 +3,12 @@
 #include "ModulePlayer.h"
 
 ModulePlayer::ModulePlayer(Application* app, bool start_enabled) : Module(app, start_enabled)
-{}
+{
+    for (int i = 0; i != 10; ++i)
+    {
+        explosionAnim.PushBack({ i * 202,0,202,202 });
+    }
+}
 
 ModulePlayer::~ModulePlayer()
 {}
@@ -12,42 +17,24 @@ ModulePlayer::~ModulePlayer()
 bool ModulePlayer::Start()
 {
 	LOG("Loading player");
-    playerTex = App->textures->Load("Assets/Textures/Rocket.png");
+    playerTex = App->textures->Load("Assets/Textures/Ovni.png");
     explosion = App->textures->Load("Assets/Textures/Explosion.png");
-    //explosionAnim.totalFrames = 0;
-    for (int i = 0; i != 10; ++i)
-    {
-        explosionAnim.PushBack({ i * 202,0,202,202 });
-    }
     explosionAnim.loop = false;
     explosionAnim.speed = 15.0f;
     explosionAnim.Reset();
 
-    player.mass = 2;
-    player.angle = 0.0f;
-    player.pos.x = 200;
-    player.pos.y = 674;
-    player.radius = 28;
-    player.pastPos.x = player.pos.x;
-    player.pastPos.y = player.pos.y;
-    player.force.SetToZero();
+    CreatePlayer();
 
-    if (player.collider == nullptr)
-    {
-        player.collider = new Collider({ player.pos.x - player.radius,player.pos.y - player.radius,player.radius * 2,player.radius * 2 }, Collider::Type::PLAYER, this);
-        player.shape = Object::Shape::CIRCLE;
-    }
+    victory = false;
+    onceMusic = true;
 
-    App->physics->AddObject(&player);
-
-    isMovingUp = false;
-    isMovingLeft = false;
-    isMovingRight = false;
-    isMovingDown = false;
-    isDestroyed = false;
+    flagPosition.x = 0;
+    flagPosition.y = 0;
+    flagAngle = 0.0f;
 
     movingFx = App->audio->LoadFx("Assets/Sound/Fx/ovni.wav");
     explosionFx = App->audio->LoadFx("Assets/Sound/Fx/expurosion.wav");
+    flagFx = App->audio->LoadFx("Assets/Sound/Fx/checkpoint.wav");
 
 	return true;
 }
@@ -61,24 +48,35 @@ bool ModulePlayer::CleanUp()
     App->textures->Unload(explosion);
     App->audio->UnloadFx(movingFx);
     App->audio->UnloadFx(explosionFx);
+    App->audio->UnloadFx(flagFx);
 
 	return true;
 }
 
 update_status ModulePlayer::PreUpdate()
 {
-    if (App->input->GetKey(SDL_SCANCODE_F11) == KEY_DOWN)
+    if (App->input->GetKey(SDL_SCANCODE_F10) == KEY_DOWN)
+    {
+        checkpoint = !checkpoint;
+        if (App->scene_intro->currentScreen == GameScreen::EARTH)
+        {
+            App->scene_intro->DeleteEarth();
+            App->scene_intro->CreateEarth(checkpoint);
+        }
+    }
+    if (App->input->GetKey(SDL_SCANCODE_F11) == KEY_DOWN && !victory)
     {
         isDestroyed = true;
         App->audio->PlayFx(explosionFx);
     }
-    if (App->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN)
+    if (App->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN && !victory)
     {
         godMode = !godMode;
     }
 
+    LOG("angle: %f", player.angle);
 
-    if (!isDestroyed)
+    if (!isDestroyed && !victory)
     {
         if (App->input->GetKey(SDL_SCANCODE_Q) == KEY_REPEAT)
         {
@@ -88,6 +86,16 @@ update_status ModulePlayer::PreUpdate()
         {
             player.angle += 1.0f;
         }
+
+        if (player.angle >= 360.0f)
+        {
+            player.angle = player.angle - 360.0f;
+        }
+        if (player.angle < 0.0f)
+        {
+            player.angle = 360 + player.angle;
+        }
+
         if (App->input->GetKey(SDL_SCANCODE_W) == KEY_REPEAT)
         {
             //if ((position.y + height) > (App->renderer->camera.h))
@@ -131,7 +139,7 @@ update_status ModulePlayer::PreUpdate()
                 movingChannelTwo = App->audio->PlayFx(movingFx, -1);
             }
             
-            if (player.angle >= -20.0f)
+            if (player.angle >= 340.0f && App->scene_intro->currentScreen == GameScreen::EARTH)
             {
                 player.angle -= 1.0f;
             }
@@ -142,6 +150,11 @@ update_status ModulePlayer::PreUpdate()
             {
                 isMovingLeft = false;
                 App->audio->StopFx(movingChannelTwo);
+            }
+
+            if (player.angle <= 360.0f && player.angle > 180.0f && App->scene_intro->currentScreen != GameScreen::MOON)
+            {
+                player.angle += 1.0f;
             }
         }
 
@@ -188,7 +201,7 @@ update_status ModulePlayer::PreUpdate()
                 movingChannelFour = App->audio->PlayFx(movingFx, -1);
             }
 
-            if (player.angle <= 20.0f)
+            if (player.angle <= 20.0f && App->scene_intro->currentScreen == GameScreen::EARTH)
             {
                 player.angle += 1.0f;
             }
@@ -200,29 +213,37 @@ update_status ModulePlayer::PreUpdate()
                 isMovingRight = false;
                 App->audio->StopFx(movingChannelFour);
             }
+
+            if (player.angle >= 0 && player.angle < 180.0f && App->scene_intro->currentScreen != GameScreen::MOON)
+            {
+                player.angle -= 1.0f;
+            }
         }
     }
     else
     {
-        if (App->input->GetKey(SDL_SCANCODE_R) == KEY_DOWN)
+        if (isDestroyed && App->input->GetKey(SDL_SCANCODE_R) == KEY_DOWN)
         {
-            player.pos.x = 200;
-            player.pos.y = 684;
-            player.pastPos.x = player.pos.x;
-            player.pastPos.y = player.pos.y;
-            player.force.SetToZero();
-            isMovingUp = false;
-            isMovingLeft = false;
-            isMovingRight = false;
-            isMovingDown = false;
-            isDestroyed = false;
-            explosionAnim.Reset();
-            if (player.collider == nullptr)
-            {
-                player.collider = new Collider({ player.pos.x - player.radius,player.pos.y - player.radius,player.radius * 2,player.radius * 2 }, Collider::Type::PLAYER, this);
-            }
+            CreatePlayer();
+            victory = false;
+            onceMusic = true;
+
             App->scene_intro->currentScreen = GameScreen::EARTH;
-            App->scene_intro->CreateEarth();
+            App->scene_intro->CreateEarth(checkpoint);
+
+            flagPosition.x = 0;
+            flagPosition.y = 0;
+            flagAngle = 0.0f;
+        }
+        else if (victory && App->input->GetKey(SDL_SCANCODE_RETURN) == KEY_DOWN)
+        {
+            App->scene_intro->currentScreen = GameScreen::EARTH;
+            App->scene_intro->currentScene = Scene::TITLE_SCREEN;
+            App->audio->PlayMusic("Assets/Sound/title.ogg", 0.0f);
+            victory = false;
+            onceMusic = true;
+            App->physics->Disable();
+            Disable();
         }
     }
 
@@ -233,7 +254,7 @@ update_status ModulePlayer::PreUpdate()
 update_status ModulePlayer::Update(float dt)
 {
     dtAnim = dt;
-    if (!isDestroyed)
+    if (!isDestroyed && !victory)
     {
         /*
         nextPos = position;
@@ -283,26 +304,18 @@ update_status ModulePlayer::Update(float dt)
             player.speed.x = 500.0f;
         else if (player.speed.x < -500.0f)
             player.speed.x = -500.0f;
-        LOG("%f,%f", player.speed.x,player.speed.y);
+        //LOG("%f,%f", player.speed.x,player.speed.y);
     }
     else
     {
         if (isDestroyed)
         {
-            if (player.collider != nullptr)
-            {
-                player.collider->pendingToDelete = true;
-                player.collider = nullptr;
-            }
+            DeletePlayer();
             App->scene_intro->DeleteAsteroids();
+            App->scene_intro->DeleteMoon();
+            App->scene_intro->DeleteEarth();
             explosionAnim.Update(dt);
-            player.speed.x = 0.0f;
-            player.speed.y = 0.0f;
         }
-        /*else                  Victory
-        {
-
-        }*/
     }
     return UPDATE_CONTINUE;
 }
@@ -320,7 +333,7 @@ update_status ModulePlayer::PostUpdate()
     {
         App->renderer->Blit(playerTex, player.pos.x - 60, player.pos.y - 28, false, (double)player.angle);
     }
-    
+
     if (App->physics->debug && player.collider != nullptr)
         App->renderer->DrawCircle(player.pos.x, player.pos.y, player.radius, 0, 255, 0, 100);
 
@@ -342,6 +355,19 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
                 }
                 LOG("Solid!");
             }
+            else if (c2->type == Collider::Type::WATER)
+            {
+                if (abs((int)player.speed.y) <= 1.0f && abs((int)player.pastSpeed.y) <= 1.0f)
+                {
+                    victory = true;
+                    player.speed.x = 0.0f;
+                    if (onceMusic)
+                    {
+                        App->audio->PlayMusic("Assets/Sound/victory.ogg", 0.0f);
+                        onceMusic = false;
+                    }
+                }
+            }
         }
         if (App->scene_intro->currentScreen == GameScreen::ASTEROIDS)
         {
@@ -355,8 +381,143 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
         {
             if (c2->type == Collider::Type::MOON)
             {
+                if (abs((int)player.pastSpeed.y) >= 300.0f)
+                {
+                    isDestroyed = true;
+                    App->audio->PlayFx(explosionFx);
+                }
+                else
+                {
+                    float playerAngle = 0.0f;
+                    float angleMargin = 0.0f;
+
+                    if (player.angle < 0)
+                    {
+                        playerAngle = 360.0f - player.angle;
+                    }
+                    else
+                    {
+                        playerAngle = player.angle;
+                    }
+                    if (player.pos.x <= App->scene_intro->moon.pos.x && player.pos.y <= App->scene_intro->moon.pos.y) //TOP LEFT
+                    {
+                        if (playerAngle <= 360.0f - angleMargin && playerAngle >= 270.0f + angleMargin)
+                        {
+                            if (!checkpoint)
+                            {
+                                checkpoint = true;
+                                flagPosition.x = player.collider->rect.x;
+                                flagPosition.y = player.collider->rect.y;
+                                flagAngle = player.angle;
+                                App->audio->PlayFx(flagFx);
+                            }
+                        }
+                        else
+                        {
+                            isDestroyed = true;
+                            App->audio->PlayFx(explosionFx);
+                        }
+                    }
+                    else if (player.pos.x > App->scene_intro->moon.pos.x && player.pos.y <= App->scene_intro->moon.pos.y) //TOP RIGHT
+                    {
+                        if (playerAngle <= 90.0f - angleMargin && playerAngle >= angleMargin)
+                        {
+                            if (!checkpoint)
+                            {
+                                checkpoint = true;
+                                flagPosition.x = player.collider->rect.x;
+                                flagPosition.y = player.collider->rect.y;
+                                flagAngle = player.angle;
+                                App->audio->PlayFx(flagFx);
+                            }
+                        }
+                        else
+                        {
+                            isDestroyed = true;
+                            App->audio->PlayFx(explosionFx);
+                        }
+                    }
+                    else if (player.pos.x <= App->scene_intro->moon.pos.x && player.pos.y > App->scene_intro->moon.pos.y) //BOTTOM LEFT
+                    {
+                        if (playerAngle <= 270.0f - angleMargin && playerAngle >= 180.0f + angleMargin)
+                        {
+                            if (!checkpoint)
+                            {
+                                checkpoint = true;
+                                flagPosition.x = player.collider->rect.x;
+                                flagPosition.y = player.collider->rect.y;
+                                flagAngle = player.angle;
+                                App->audio->PlayFx(flagFx);
+                            }
+                        }
+                        else
+                        {
+                            isDestroyed = true;
+                            App->audio->PlayFx(explosionFx);
+                        }
+                    }
+                    else if (player.pos.x > App->scene_intro->moon.pos.x && player.pos.y > App->scene_intro->moon.pos.y) //BOTTOM RIGHT
+                    {
+                        if (playerAngle <= 180.0f - angleMargin && playerAngle >= 90.0f + angleMargin)
+                        {
+                            if (!checkpoint)
+                            {
+                                checkpoint = true;
+                                flagPosition.x = player.collider->rect.x;
+                                flagPosition.y = player.collider->rect.y;
+                                flagAngle = player.angle;
+                                App->audio->PlayFx(flagFx);
+                            }
+                        }
+                        else
+                        {
+                            isDestroyed = true;
+                            App->audio->PlayFx(explosionFx);
+                        }
+                    }
+                }
                 LOG("YAY");
             }
         }
+    }
+}
+
+void ModulePlayer::CreatePlayer()
+{
+    player.mass = 2;
+    player.angle = 0.0f;
+    player.pos.x = 200;
+    player.pos.y = 701;
+    player.speed.x = 0.0f;
+    player.speed.y = 0.0f;
+    player.radius = 28;
+    player.pastPos.x = player.pos.x;
+    player.pastPos.y = player.pos.y;
+    player.force.SetToZero();
+
+    if (player.collider == nullptr)
+    {
+        player.collider = new Collider({ player.pos.x - player.radius,player.pos.y - player.radius,player.radius * 2,player.radius * 2 }, Collider::Type::PLAYER, this);
+        player.shape = Object::Shape::CIRCLE;
+    }
+
+    App->physics->AddObject(&player);
+
+    isMovingUp = false;
+    isMovingLeft = false;
+    isMovingRight = false;
+    isMovingDown = false;
+    isDestroyed = false;
+    checkpoint = false;
+
+    explosionAnim.Reset();
+}
+
+void ModulePlayer::DeletePlayer()
+{
+    if (player.collider != nullptr)
+    {
+        player.collider->pendingToDelete = true;
+        App->physics->RemoveObject(&player);
     }
 }

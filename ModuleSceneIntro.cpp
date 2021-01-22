@@ -29,12 +29,15 @@ bool ModuleSceneIntro::Start()
     bgEarth = App->textures->Load("Assets/Textures/BG.png");
     bgAsteroids = App->textures->Load("Assets/Textures/BG2.png");
     bgMoon = App->textures->Load("Assets/Textures/BG3.png");
+    bgWater = App->textures->Load("Assets/Textures/BG4.png");
+    flag = App->textures->Load("Assets/Textures/Flag.png");
 
     srand(time(NULL));
     asteroidTxt = App->textures->Load("Assets/Textures/Asteroid.png");
 
     // WIN/LOSE //
     gameOverTxt = App->textures->Load("Assets/Textures/GameOver.png");
+    victoryTxt = App->textures->Load("Assets/Textures/MissionComplete.png");
 
 	return ret;
 }
@@ -48,6 +51,7 @@ bool ModuleSceneIntro::CleanUp()
     App->textures->Unload(bgAsteroids);
     App->textures->Unload(bgMoon);
     App->textures->Unload(asteroidTxt);
+    App->textures->Unload(flag);
 
 	return true;
 }
@@ -96,7 +100,7 @@ update_status ModuleSceneIntro::PreUpdate()
                 {
                     currentScreen = EARTH;
                     DeleteAsteroids();
-                    CreateEarth();
+                    CreateEarth(App->player->checkpoint);
                     break;
                 }
                 case MOON:
@@ -194,7 +198,7 @@ update_status ModuleSceneIntro::PostUpdate()
                 App->player->Enable();
                 currentScene = GAME;
                 currentScreen = EARTH;
-                CreateEarth();
+                CreateEarth(App->player->checkpoint);
                 startGame = false;
             }
             App->renderer->Blit(backgroundTitle, 0, 0,true);
@@ -206,7 +210,10 @@ update_status ModuleSceneIntro::PostUpdate()
             {
                 case EARTH:
                 {
-                    App->renderer->Blit(bgEarth, 0, 0, true);
+                    if (!App->player->checkpoint)
+                        App->renderer->Blit(bgEarth, 0, 0, true);
+                    else
+                        App->renderer->Blit(bgWater, 0, 0, true);
 
                     if (App->physics->debug && land.collider != nullptr)
                     {
@@ -252,6 +259,12 @@ update_status ModuleSceneIntro::PostUpdate()
                     {
                         App->renderer->DrawCircle(moon.pos.x,moon.pos.y,moon.radius, 255, 0, 0, 100);
                     }
+
+                    if (App->player->checkpoint)
+                    {
+                        App->renderer->Blit(flag, App->player->flagPosition.x, App->player->flagPosition.y, false, App->player->flagAngle);
+                    }
+
                     break;
                 }
             }
@@ -259,6 +272,10 @@ update_status ModuleSceneIntro::PostUpdate()
             if (App->player->isDestroyed)
             {
                 App->renderer->Blit(gameOverTxt, 0, App->renderer->camera.h / 2 - 90, false);
+            }
+            else if (App->player->victory)
+            {
+                App->renderer->Blit(victoryTxt, 0, App->renderer->camera.h / 2 - 160, false);
             }
             break;
         }
@@ -282,7 +299,7 @@ void ModuleSceneIntro::CreateAsteroids()
     top.mass = 1.0f;
     top.radius = 35;
     top.pos.x = -70;
-    top.pos.y = 135;
+    top.pos.y = 145;
     top.angle = (float)(rand() % 360);
     top.speed.x = 550.0f;
     top.shape = Object::Shape::CIRCLE;
@@ -308,7 +325,7 @@ void ModuleSceneIntro::CreateAsteroids()
         mid[i].mass = 1.0f;
         mid[i].radius = 35;
         mid[i].pos.x = App->renderer->camera.w + 105 - (i * 350);//70
-        mid[i].pos.y = 410;//375
+        mid[i].pos.y = 420;//375
         mid[i].angle = (float)(rand() % 360);
         mid[i].speed.x = -300.0f;
         mid[i].shape = Object::Shape::CIRCLE;
@@ -336,7 +353,7 @@ void ModuleSceneIntro::CreateAsteroids()
         bot[i].mass = 1.0f;
         bot[i].radius = 35;
         bot[i].pos.x = 105 + (i * 262);//70
-        bot[i].pos.y = 650;//615
+        bot[i].pos.y = 660;//615
         bot[i].angle = (float)(rand() % 360);
         bot[i].speed.x = 165.0f;
         bot[i].shape = Object::Shape::CIRCLE;
@@ -353,14 +370,14 @@ void ModuleSceneIntro::DeleteAsteroids()
     if (top.collider != nullptr)
     {
         App->physics->RemoveObject(&top);
-        top.collider = nullptr;
+        //top.collider = nullptr;
     }
     for (int i = 0; i != 3; ++i)
     {
         if (mid[i].collider != nullptr)
         {
             App->physics->RemoveObject(&mid[i]);
-            mid[i].collider = nullptr;
+            //mid[i].collider = nullptr;
         }
     }
     for (int i = 0; i != 4; ++i)
@@ -368,7 +385,7 @@ void ModuleSceneIntro::DeleteAsteroids()
         if (bot[i].collider != nullptr)
         {
             App->physics->RemoveObject(&bot[i]);
-            bot[i].collider = nullptr;
+            //bot[i].collider = nullptr;
         }
     }
 }
@@ -394,30 +411,35 @@ void ModuleSceneIntro::DeleteMoon()
     if (moon.collider != nullptr)
     {
         App->physics->RemoveObject(&moon);
-        moon.collider = nullptr;
+        //moon.collider = nullptr;
     }
 }
 
-void ModuleSceneIntro::CreateEarth()
+void ModuleSceneIntro::CreateEarth(bool checkpoint)
 {
-    land.pos.x = 0;
-    land.pos.y = 740;
-    land.pastPos.x = land.pos.x;
-    land.pastPos.y = land.pos.y;
-    land.mass = 0.0f;
-    if (land.collider == nullptr)
+    if (!checkpoint)
     {
-        land.collider = new Collider({ land.pos.x,land.pos.y,570,180 }, Collider::Type::SOLID, this);
-        App->physics->AddObject(&land);
+        land.pos.x = 0;
+        land.pos.y = 729;
+        land.pastPos.x = land.pos.x;
+        land.pastPos.y = land.pos.y;
+        land.mass = 0.0f;
+        if (land.collider == nullptr)
+        {
+            land.collider = new Collider({ land.pos.x,land.pos.y,SCREEN_WIDTH,200 }, Collider::Type::SOLID, this);
+            App->physics->AddObject(&land);
+        }
     }
-
-    water.pos.x = 570;
-    water.pos.y = 800;
-    water.mass = 0.0f;
-    if (water.collider == nullptr)
+    else
     {
-        water.collider = new Collider({ water.pos.x,water.pos.y,350,180 }, Collider::Type::WATER, this);
-        App->physics->AddObject(&water);
+        water.pos.x = 0;
+        water.pos.y = 777;
+        water.mass = 0.0f;
+        if (water.collider == nullptr)
+        {
+            water.collider = new Collider({ water.pos.x,water.pos.y,SCREEN_WIDTH,180 }, Collider::Type::WATER, this);
+            App->physics->AddObject(&water);
+        }
     }
 }
 
@@ -426,12 +448,12 @@ void ModuleSceneIntro::DeleteEarth()
     if (land.collider != nullptr)
     {
         App->physics->RemoveObject(&land);
-        land.collider = nullptr;
+        //land.collider = nullptr;
     }
     if (water.collider != nullptr)
     {
         App->physics->RemoveObject(&water);
-        water.collider = nullptr;
+        //water.collider = nullptr;
     }
 }
 
