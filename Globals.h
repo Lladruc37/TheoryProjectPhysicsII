@@ -1,4 +1,6 @@
-#pragma once
+#ifndef __GLOBALS_H__
+#define __GLOBALS_H__
+
 #include <windows.h>
 #include <stdio.h>
 
@@ -16,7 +18,7 @@ typedef unsigned char uchar;
 typedef unsigned __int32 uint32;
 typedef unsigned __int64 uint64;
 
-enum update_status
+enum UpdateStatus
 {
 	UPDATE_CONTINUE = 1,
 	UPDATE_STOP,
@@ -37,3 +39,5 @@ enum update_status
 #define WIN_FULLSCREEN_DESKTOP false
 #define VSYNC true
 #define TITLE "Theory Project"
+
+#endif // !__GLOBALS_H__

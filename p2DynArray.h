@@ -14,28 +14,28 @@ class p2DynArray
 {
 private:
 
-	VALUE*			data;
-	unsigned int	mem_capacity;
-	unsigned int	num_elements;
+	VALUE* data;
+	uint memCapacity;
+	uint numElements;
 
 public:
 
 	// Constructors
-	p2DynArray() : mem_capacity(0), num_elements(0), data(NULL)
+	p2DynArray() : memCapacity(0), numElements(0), data(NULL)
 	{
 		Alloc(DYN_ARRAY_BLOCK_SIZE);
 	}
 
-	p2DynArray(unsigned int capacity) : mem_capacity(0), num_elements(0), data(NULL)
+	p2DynArray(uint capacity) : memCapacity(0), numElements(0), data(NULL)
 	{
 		Alloc(capacity);
 	}
 
-	p2DynArray(const p2DynArray& array) : mem_capacity(0), num_elements(0), data(NULL)
+	p2DynArray(const p2DynArray& array) : memCapacity(0), numElements(0), data(NULL)
 	{
-		Alloc(array.num_elements);
+		Alloc(array.numElements);
 
-		for(unsigned int i = 0; i < array.num_elements; ++i)
+		for (uint i = 0; i < array.numElements; ++i)
 			PushBack(array.data[i]);
 	}
 
@@ -46,23 +46,23 @@ public:
 	}
 
 	// Operators
-	VALUE& operator[](unsigned int index)
+	VALUE& operator[](uint index)
 	{
-		assert(index < num_elements);
+		assert(index < numElements);
 		return data[index];
 	}
 
-	const VALUE& operator[](unsigned int index) const
+	const VALUE& operator[](uint index) const
 	{
-		assert(index < num_elements);
+		assert(index < numElements);
 		return data[index];
 	}
 
 	const p2DynArray<VALUE>& operator=(const p2DynArray<VALUE>& other)
 	{
-		Alloc(other.num_elements);
+		Alloc(other.numElements);
 
-		for(unsigned int i = 0; i < other.num_elements; ++i)
+		for (uint i = 0; i < other.numElements; ++i)
 			PushBack(other.data[i]);
 
 		return *this;
@@ -71,19 +71,19 @@ public:
 	// Data Management
 	void PushBack(const VALUE& element)
 	{
-		if(num_elements >= mem_capacity)
+		if (numElements >= memCapacity)
 		{
-			Alloc(mem_capacity + DYN_ARRAY_BLOCK_SIZE);
+			Alloc(memCapacity + DYN_ARRAY_BLOCK_SIZE);
 		}
 
-		data[num_elements++] = element;
+		data[numElements++] = element;
 	}
 
 	bool Pop(VALUE& value)
 	{
-		if(num_elements > 0)
+		if (numElements > 0)
 		{
-			value = data[--num_elements];
+			value = data[--numElements];
 			return true;
 		}
 		return false;
@@ -91,81 +91,81 @@ public:
 
 	void Clear()
 	{
-		num_elements = 0;
+		numElements = 0;
 	}
 
 	bool Insert(const VALUE& element, unsigned int position)
 	{
-		if(position > num_elements)
+		if (position > numElements)
 			return false;
 
-		if(position == num_elements)
+		if (position == numElements)
 		{
 			PushBack(element);
 			return true;
 		}
 
-		if(num_elements + 1 > mem_capacity)
-			Alloc(mem_capacity + DYN_ARRAY_BLOCK_SIZE);
+		if (numElements + 1 > memCapacity)
+			Alloc(memCapacity + DYN_ARRAY_BLOCK_SIZE);
 
-		for(unsigned int i = num_elements; i > position; --i)
+		for (uint i = numElements; i > position; --i)
 		{
 			data[i] = data[i - 1];
 		}
 
 		data[position] = element;
-		++num_elements;
+		++numElements;
 
 		return true;
 	}
 
-	VALUE* At(unsigned int index)
+	VALUE* At(uint index)
 	{
 		VALUE* result = NULL;
-		
-		if(index < num_elements)
+
+		if (index < numElements)
 			return result = &data[index];
-		
+
 		return result;
 	}
 
-	const VALUE* At(unsigned int index) const
+	const VALUE* At(uint index) const
 	{
 		VALUE* result = NULL;
 
-		if(index < num_elements)
+		if (index < numElements)
 			return result = &data[index];
 
 		return result;
 	}
 
 	// Utils
-	unsigned int GetCapacity() const
+	uint GetCapacity() const
 	{
-		return mem_capacity;
+		return memCapacity;
 	}
 
-	unsigned int Count() const
+	uint Count() const
 	{
-		return num_elements;
+		return numElements;
 	}
 
 private:
-	
+
 	// Private Utils
-	void Alloc(unsigned int mem)
+	void Alloc(uint mem)
 	{
 		VALUE* tmp = data;
 
-		mem_capacity = mem;
-		data = new VALUE[mem_capacity];
+		memCapacity = mem;
+		data = new VALUE[memCapacity];
 
-		if(num_elements > mem_capacity)
-			num_elements = mem_capacity;
+		if (numElements > memCapacity)
+			numElements = memCapacity;
 
-		if(tmp != NULL)
+		if (tmp != NULL)
 		{
-			for(unsigned int i = 0; i < num_elements; ++i)
+			for (uint i = 0; i < numElements; ++i)
 				data[i] = tmp[i];
 
 			delete[] tmp;

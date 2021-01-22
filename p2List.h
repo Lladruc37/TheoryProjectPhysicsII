@@ -1,21 +1,19 @@
-#ifndef __p2List_H__
-#define __p2List_H__
+#ifndef __P2LIST_H__
+#define __P2LIST_H__
 
 #include "Globals.h"
 
-/**
-* Contains items from double linked list
-*/
+// Contains items from double linked list
 template<class tdata>
 struct p2List_item
 {
-	tdata                 data;
-	p2List_item<tdata>*   next;
-	p2List_item<tdata>*   prev;
+	tdata data;
+	p2List_item<tdata>* next;
+	p2List_item<tdata>* prev;
 
-	inline p2List_item(const tdata& _data)
+	inline p2List_item(const tdata& newData)
 	{
-		data = _data;
+		data = newData;
 		next = prev = NULL;
 	}
 
@@ -23,115 +21,101 @@ struct p2List_item
 	{}
 };
 
-/**
-* Manages a double linked list
-*/
+// Manages a double linked list
 template<class tdata>
 class p2List
 {
 
 private:
 
-	p2List_item<tdata>*   start;
-	p2List_item<tdata>*   end;
-	unsigned int  size;
+	p2List_item<tdata>* start;
+	p2List_item<tdata>* end;
+	uint size;
 
 public:
 
-	/**
-	* Constructor
-	*/
+	// Constructor
 	inline p2List()
 	{
 		start = end = NULL;
 		size = 0;
 	}
 
-	/**
-	* Destructor
-	*/
+	// Destructor
 	~p2List()
 	{
-		clear();
+		Clear();
 	}
 
-	p2List_item<tdata>* getFirst() const
+	p2List_item<tdata>* GetFirst() const
 	{
 		return start;
 	}
 
-	p2List_item<tdata>* getLast() const
+	p2List_item<tdata>* GetLast() const
 	{
 		return end;
 	}
 
-	/**
-	* Get Size
-	*/
-	unsigned int count() const
+	// Get Size
+	uint Count() const
 	{
 		return size;
 	}
 
-	/**
-	* Add new item
-	*/
-	p2List_item<tdata>* add(const tdata& item)
+	// Add new item
+	p2List_item<tdata>* Add(const tdata& item)
 	{
-		p2List_item<tdata>*   p_data_item;
-		p_data_item = new p2List_item < tdata >(item);
+		p2List_item<tdata>* dataItem;
+		dataItem = new p2List_item < tdata >(item);
 
-		if(start == NULL)
+		if (start == NULL)
 		{
-			start = end = p_data_item;
+			start = end = dataItem;
 		}
 		else
 		{
-			p_data_item->prev = end;
-			end->next = p_data_item;
-			end = p_data_item;
+			dataItem->prev = end;
+			end->next = dataItem;
+			end = dataItem;
 		}
 		++size;
-		return(p_data_item);
+		return(dataItem);
 	}
 
-	/**
-	* Find by index
-	*/
-	bool at(unsigned int index, tdata& data) const
+	// Find by index (returns true if found and false if not)
+	bool At(uint index, tdata& data) const
 	{
 		bool ret = false;
-		unsigned int i = 0;
-		p2List_item<tdata>*   p_data = start;
+		uint i = 0;
+		p2List_item<tdata>* pData = start;
 
-		for(unsigned int i = 0; i < index && p_data != NULL; ++i)
-			p_data = p_data->next;
+		for (uint i = 0; i < index && pData != NULL; ++i)
+			pData = pData->next;
 
-		if(p_data != NULL)
+		if (pData != NULL)
 		{
 			ret = true;
-			data = p_data->data;
+			data = pData->data;
 		}
 
 		return ret;
 	}
 
-	/**
-	* Deletes an item from the list
-	*/
-	bool del(p2List_item<tdata>* item)
+	// Deletes an item from the list
+	bool Del(p2List_item<tdata>* item)
 	{
-		if(item == NULL)
+		if (item == NULL)
 		{
 			return (false);
 		}
 
 		// Now reconstruct the list
-		if(item->prev != NULL)
+		if (item->prev != NULL)
 		{
 			item->prev->next = item->next;
 
-			if(item->next != NULL)
+			if (item->next != NULL)
 			{
 				item->next->prev = item->prev;
 			}
@@ -142,7 +126,7 @@ public:
 		}
 		else
 		{
-			if(item->next)
+			if (item->next)
 			{
 				item->next->prev = NULL;
 				start = item->next;
@@ -158,37 +142,33 @@ public:
 		return(true);
 	}
 
-	/**
-	* Destroy and free all mem
-	*/
-	void clear()
+	// Destroy and free all memory
+	void Clear()
 	{
-		p2List_item<tdata>*   p_data;
-		p2List_item<tdata>*   p_next;
-		p_data = start;
+		p2List_item<tdata>* pData;
+		p2List_item<tdata>* pNext;
+		pData = start;
 
-		while(p_data != NULL)
+		while (pData != NULL)
 		{
-			p_next = p_data->next;
-			delete (p_data);
-			p_data = p_next;
+			pNext = pData->next;
+			delete (pData);
+			pData = pNext;
 		}
 
 		start = end = NULL;
 		size = 0;
 	}
 
-	/**
-	* returns the first apperance of data as index (-1 if not found)
-	*/
-	int find(const tdata& data)
+	// returns the first apperance of data as index (-1 if not found)
+	int Find(const tdata& data)
 	{
 		p2List_item<tdata>* tmp = start;
 		int index = 0;
 
-		while(tmp != NULL)
+		while (tmp != NULL)
 		{
-			if(tmp->data == data)
+			if (tmp->data == data)
 				return(index);
 
 			++index;
@@ -198,16 +178,14 @@ public:
 	}
 
 
-	/**
-	* returns the first apperance of data as index (-1 if not found)
-	*/
-	p2List_item<tdata>* findNode(const tdata& data)
+	// returns the first apperance (node) of data (NULL if not found)
+	p2List_item<tdata>* FindNode(const tdata& data)
 	{
 		p2List_item<tdata>* tmp = start;
 
-		while(tmp != NULL)
+		while (tmp != NULL)
 		{
-			if(tmp->data == data)
+			if (tmp->data == data)
 				return(tmp);
 			tmp = tmp->next;
 		}
@@ -215,4 +193,4 @@ public:
 		return (NULL);
 	}
 };
-#endif /*__p2List_H__*/
+#endif // __P2LIST_H__

@@ -1,18 +1,14 @@
-#ifndef __ModuleWindow_H__
-#define __ModuleWindow_H__
+#ifndef __MODULE_WINDOW_H__
+#define __MODULE_WINDOW_H__
 
+#include "Globals.h"
 #include "Module.h"
 #include "SDL/include/SDL.h"
-
-class Application;
 
 class ModuleWindow : public Module
 {
 public:
-
-	ModuleWindow(Application* app, bool start_enabled = true);
-
-	// Destructor
+	ModuleWindow(Application* app, bool startEnabled = true);
 	virtual ~ModuleWindow();
 
 	bool Init();
@@ -25,7 +21,7 @@ public:
 	SDL_Window* window;
 
 	//The surface contained by the window
-	SDL_Surface* screen_surface;
+	SDL_Surface* screenSurface;
 };
 
-#endif // __ModuleWindow_H__
+#endif // __MODULE_WINDOW_H__

@@ -1,8 +1,10 @@
-#pragma once
+#ifndef __MODULE_INPUT_H__
+#define __MODULE_INPUT_H__
+
 #include "Module.h"
 #include "Globals.h"
 
-enum KEY_STATE
+enum KeyState
 {
 	KEY_IDLE = 0,
 	KEY_DOWN,
@@ -13,31 +15,32 @@ enum KEY_STATE
 class ModuleInput : public Module
 {
 public:
-	
-	ModuleInput(Application* app, bool start_enabled = true);
+	ModuleInput(Application* app, bool startEnabled = true);
 	~ModuleInput();
 
 	bool Init();
-	update_status PreUpdate();
+	UpdateStatus PreUpdate();
 	bool CleanUp();
 
-	KEY_STATE GetKey(int id) const
+	KeyState GetKey(int id) const
 	{
 		return keyboard[id];
 	}
 
 	int GetMouseX() const
 	{
-		return mouse_x;
+		return mouseX;
 	}
 
 	int GetMouseY() const
 	{
-		return mouse_y;
+		return mouseY;
 	}
 
 private:
-	KEY_STATE* keyboard;
-	int mouse_x;
-	int mouse_y;
+	KeyState* keyboard;
+	int mouseX;
+	int mouseY;
 };
+
+#endif // !__MODULE_INPUT_H__

@@ -1,9 +1,11 @@
-#include "Globals.h"
 #include "Application.h"
+#include "ModuleSceneIntro.h"
+#include "ModulePlayer.h"
+#include "ModuleInput.h"
 #include "ModulePhysics.h"
 #include "math.h"
 
-ModulePhysics::ModulePhysics(Application* app, bool start_enabled) : Module(app, start_enabled)
+ModulePhysics::ModulePhysics(Application* app, bool startEnabled) : Module(app, startEnabled)
 {
 	debug = true;
 
@@ -45,35 +47,20 @@ ModulePhysics::~ModulePhysics()
 bool ModulePhysics::Start()
 {
 	LOG("Creating Physics 2D environment");
-    gravity.x = 0.0f;
-    gravity.y = 0.0f;
+    gravity.SetToZero();
     debug = false;
 	return true;
 }
 
 // 
-update_status ModulePhysics::PreUpdate()
+UpdateStatus ModulePhysics::PreUpdate()
 {
-    // Delete colliders scheduled for deletion
-    p2List_item<Object*>* tmp = objects.getFirst();
-    while (tmp != nullptr)
-    {
-        if (tmp->data->collider != nullptr && tmp->data->collider->pendingToDelete == true)
-        {
-            delete tmp->data->collider;
-            tmp->data->collider = nullptr;
-        }
-
-        tmp = tmp->next;
-    }
-
-
     Collider* c1;
     Collider* c2;
 
     // Check collisions
-    tmp = objects.getFirst();
-    while(tmp != nullptr)
+    p2List_item<Object*>* tmp = objects.GetFirst();
+    while (tmp != nullptr)
     {
         // skip empty colliders
         if (tmp->data->collider == nullptr)
@@ -86,7 +73,7 @@ update_status ModulePhysics::PreUpdate()
 
         // avoid checking collisions already checked
         p2List_item<Object*>* tmp2 = tmp->next;
-        while(tmp2 != nullptr)
+        while (tmp2 != nullptr)
         {
             // skip empty colliders
             if (tmp2->data->collider == nullptr)
@@ -97,7 +84,7 @@ update_status ModulePhysics::PreUpdate()
 
             c2 = tmp2->data->collider;
 
-            if (matrix[c1->type][c2->type] && Intersects(tmp->data,tmp2->data) && App->player->godMode == false)
+            if (matrix[c1->type][c2->type] && Intersects(tmp->data, tmp2->data) && App->player->godMode == false)
             {
                 ResolveCollisions(tmp->data, tmp2->data);
                 if (c1->listener)
@@ -114,14 +101,14 @@ update_status ModulePhysics::PreUpdate()
         tmp = tmp->next;
     }
 
-	return UPDATE_CONTINUE;
+    return UPDATE_CONTINUE;
 }
 
-update_status ModulePhysics::Update(float dt)
+UpdateStatus ModulePhysics::Update(float dt)
 {
     UpdateGravity();
 
-    p2List_item<Object*>* tmp = objects.getFirst();
+    p2List_item<Object*>* tmp = objects.GetFirst();
     while (tmp != nullptr)
     {
         if (tmp->data->mass != 0.0f)
@@ -133,21 +120,11 @@ update_status ModulePhysics::Update(float dt)
     return UPDATE_CONTINUE;
 }
 
-// 
-update_status ModulePhysics::PostUpdate()
-{
-	if(App->input->GetKey(SDL_SCANCODE_F1) == KEY_DOWN)
-		debug = !debug;
-
-	return UPDATE_CONTINUE;
-}
-
-
 // Called before quitting
 bool ModulePhysics::CleanUp()
 {
     LOG("Freeing all colliders");
-    p2List_item<Object*>* tmp = objects.getFirst();
+    p2List_item<Object*>* tmp = objects.GetFirst();
     while (tmp != nullptr)
     {
         p2List_item<Object*>* tmpNext = tmp->next;
@@ -155,38 +132,31 @@ bool ModulePhysics::CleanUp()
         tmp = tmpNext;
     }
 
-	return true;
+    return true;
 }
 
 fPoint ModulePhysics::Force2Accel(fPoint force, int mass)
 {
-    fPoint a;
-    a.x = force.x / mass;
-    a.y = force.y / mass;
-    return a;
+    return { force.x / mass, force.y / mass };
 }
 
 void ModulePhysics::UpdateGravity()
 {
-    switch (App->scene_intro->currentScreen)
+    switch (App->sceneIntro->currentScreen)
     {
     case GameScreen::EARTH:
-    {
-        gravity.x = 0.0f;
-        gravity.y = 200.0f;
+        gravity = { 0.0f,200.0f };
         break;
-    }
+
     case GameScreen::ASTEROIDS:
-    {
-        gravity.x = 0.0f;
-        gravity.y = 0.0f;
+        gravity.SetToZero();
         break;
-    }
+
     case GameScreen::MOON:
     {
         Object* player = nullptr;
         Circle* moon = nullptr;
-        p2List_item<Object*>* tmp = objects.getFirst();
+        p2List_item<Object*>* tmp = objects.GetFirst();
         while (tmp != nullptr)
         {
             if (tmp->data->collider->type == Collider::Type::PLAYER)
@@ -199,70 +169,39 @@ void ModulePhysics::UpdateGravity()
             }
             tmp = tmp->next;
         }
-        if (player != nullptr)
+
+        if (player != nullptr && moon != nullptr)
         {
-            //iPoint dif;
-            //dif.x = player->pos.x - moon->pos.x;
-            //dif.y = player->pos.y - moon->pos.y;
-
-
-            //float dist = sqrtf((float)abs(dif.x) * (float)abs(dif.x) + (float)abs(dif.y) * (float)abs(dif.y));
-            //fPoint ratio;
-            //ratio.x = dif.x / dist;
-            //ratio.y = dif.y / dist;
-
-
-
-            float dist = CalculateModule(player->pos, moon->pos);
-
-            //LOG("dist: %f", dist);
-            //LOG("ovni: %d,%d moon:%d,%d", rPos.x, rPos.y, moon->pos.x, moon->pos.y);
-
+            float moonMass = 5000000.0f;
+            // Calculate the distance
+            float dist = player->pos.DistanceTo(moon->pos);
 
             fPoint dif;
             dif.x = player->pos.x - moon->pos.x;
             dif.y = player->pos.y - moon->pos.y;
             float otherDist = 500 - dist;
             if (otherDist <= 0.0f)
-            {
                 otherDist = 0.0f;
-            }
 
-            //gravity.x = 500000 * player->mass / (dif.x * dif.x);
-            //gravity.y = 500000 * player->mass / (dif.y * dif.y);
-
+            // Set gravity according to the quadrant
             if (dif.x > 0.0f && dif.y > 0.0f) //top left
             {
-                gravity.x = 5000000 * player->mass / -(dif.x * dif.x);
-                gravity.y = 5000000 * player->mass / -(dif.y * dif.y);
-                //gravity.x = -otherDist * cos(dif.x / dist);
-                //gravity.y = -otherDist * sin(dif.y / dist);
+                gravity = { moonMass * player->mass / -(dif.x * dif.x),moonMass * player->mass / -(dif.y * dif.y) };
             }
             else if (dif.x > 0.0f && dif.y < 0.0f) // top right
             {
-                gravity.x = 5000000 * player->mass / -(dif.x * dif.x);
-                gravity.y = 5000000 * player->mass / (dif.y * dif.y);
-                //gravity.x = -otherDist * cos(dif.x / dist);
-                //gravity.y = otherDist * sin(-dif.y / dist);
+                gravity = { moonMass * player->mass / -(dif.x * dif.x),moonMass * player->mass / (dif.y * dif.y) };
             }
             else if (dif.x < 0.0f && dif.y > 0.0f) //bot left
             {
-                gravity.x = 5000000 * player->mass / (dif.x * dif.x);
-                gravity.y = 5000000 * player->mass / -(dif.y * dif.y);
-                //gravity.x = otherDist * cos(dif.x / dist);
-                //gravity.y = -otherDist * sin(dif.y / dist);
+                gravity = { moonMass * player->mass / (dif.x * dif.x),moonMass * player->mass / -(dif.y * dif.y) };
             }
             else if (dif.x < 0.0f && dif.y < 0.0f) //bot right
             {
-                gravity.x = 5000000 * player->mass / (dif.x * dif.x);
-                gravity.y = 5000000 * player->mass / (dif.y * dif.y);
-                //gravity.x = otherDist * cos(dif.x / dist);
-                //gravity.y = otherDist * sin(-dif.y / dist);
+                gravity = { moonMass * player->mass / (dif.x * dif.x),moonMass * player->mass / (dif.y * dif.y) };
             }
-            //gravity.x = gravity.x / player->mass;
-            //gravity.y = gravity.y / player->mass;
-            //LOG("Gravity: %f,%f", gravity.x, gravity.y);
 
+            // Cap gravity
             if (gravity.x > 180.0f)
             {
                 gravity.x = 180.0f;
@@ -279,37 +218,33 @@ void ModulePhysics::UpdateGravity()
             {
                 gravity.y = -180.0f;
             }
-            //LOG("Gravity: %f,%f", gravity.x, gravity.y);
-            //gravity.x = 0.0f;
-            //gravity.y = 0.0f;
         }
         break;
     }
     default:
-    {
         break;
-    }
     }
 }
 
 void ModulePhysics::UpdatePhysics(Object* object, float dt)
 {
-    // update past variables
+    // Update past variables
     object->pastPos = object->pos;
     object->pastSpeed = object->speed;
 
+    // Calculate acceleration
     fPoint a = Force2Accel(object->force, object->mass);
-    // verlet
+
+    // Calculate Verlet
     object->pos.x = object->pos.x + object->speed.x * dt + ((gravity.x + a.x) * dt * dt * 0.5);
     object->speed.x = object->speed.x + ((gravity.x + a.x) * dt);
     object->pos.y = object->pos.y + object->speed.y * dt + ((gravity.y + a.y) * dt * dt * 0.5);
     object->speed.y = object->speed.y + ((gravity.y + a.y) * dt);
 
-    // reset force
-    object->force.x = 0.0f;
-    object->force.y = 0.0f;
+    // Reset force
+    object->force.SetToZero();
 
-    // update the collider position
+    // Update the collider position
     if (object->collider != nullptr)
     {
         if (object->shape == Object::Shape::CIRCLE)
@@ -322,17 +257,15 @@ void ModulePhysics::UpdatePhysics(Object* object, float dt)
             object->collider->SetPos(object->pos.x, object->pos.y, object->collider->rect.w, object->collider->rect.h);
         }
     }
-    //LOG("pos: %d, %d acc: %f, %f", pos.x, pos.y, a.x, a.y);
 }
 
-void ModulePhysics::ResolveCollisions(Object* A, Object* B) 
+void ModulePhysics::ResolveCollisions(Object* A, Object* B)
 {
     if (A->collider->type == Collider::Type::WATER || B->collider->type == Collider::Type::WATER)
     {
-        //BUOYANCY
         if (A->collider->type == Collider::Type::WATER)
         {
-            ResetSpeed(A);
+            A->speed.SetToZero();
             Buoyancy(A, B);
         }
         else
@@ -342,22 +275,15 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
     }
     else
     {
-        ResetSpeed(A);
-        ResetSpeed(B);
+        A->speed.SetToZero();
+        B->speed.SetToZero();
         if (A->shape == Object::Shape::RECT && B->shape == Object::Shape::RECT)
         {
-            fPoint frameDifB;
-            frameDifB.x = B->pos.x - B->pastPos.x;
-            frameDifB.y = B->pos.y - B->pastPos.y;
-            iPoint tmpB;
-            tmpB.x = B->pos.x;
-            tmpB.y = B->pos.y;
-            fPoint frameDifA;
-            frameDifA.x = A->pos.x - A->pastPos.x;
-            frameDifA.y = A->pos.y - A->pastPos.y;
-            iPoint tmpA;
-            tmpA.x = A->pos.x;
-            tmpA.y = A->pos.y;
+            iPoint frameDifB = B->pos - B->pastPos;
+            iPoint tmpB = B->pos;
+            iPoint frameDifA = A->pos - A->pastPos;
+            iPoint tmpA = A->pos;
+
             while (Intersects(A, B))
             {
                 if (frameDifB.x > 0)
@@ -402,16 +328,13 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
                     frameDifA.y++;
                 }
 
-                LOG("%d,%d - %d,%d", tmpB.x, tmpB.y, tmpA.x, tmpA.y);
                 A->collider->rect.x = tmpA.x;
                 A->collider->rect.y = tmpA.y;
                 B->collider->rect.x = tmpB.x;
                 B->collider->rect.y = tmpB.y;
             }
-            B->pos.x = tmpB.x;
-            B->pos.y = tmpB.y;
-            A->pos.x = tmpA.x;
-            A->pos.y = tmpA.y;
+            B->pos = tmpB;
+            A->pos = tmpA;
         }
         else if (A->shape == Object::Shape::RECT && B->shape == Object::Shape::CIRCLE)
         {
@@ -419,18 +342,11 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
             iPoint rPos;
             float dist = ShortestDist(A, circle, rPos);
 
-            fPoint frameDifB;
-            frameDifB.x = B->pos.x - B->pastPos.x;
-            frameDifB.y = B->pos.y - B->pastPos.y;
-            iPoint tmpB;
-            tmpB.x = B->pos.x;
-            tmpB.y = B->pos.y;
-            fPoint frameDifA;
-            frameDifA.x = A->pos.x - A->pastPos.x;
-            frameDifA.y = A->pos.y - A->pastPos.y;
-            iPoint tmpA;
-            tmpA.x = rPos.x;
-            tmpA.y = rPos.y;
+            iPoint frameDifB = B->pos - B->pastPos;
+            iPoint tmpB = B->pos;
+            iPoint frameDifA = A->pos - A->pastPos;
+            iPoint tmpA = rPos;
+
             while (dist < circle->radius)
             {
                 if (frameDifB.x > 0)
@@ -474,13 +390,11 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
                     tmpA.y++;
                     frameDifA.y++;
                 }
-                dist = CalculateModule(tmpA, tmpB);
-                LOG("%d,%d - %d,%d = %f", tmpB.x, tmpB.y, tmpA.x, tmpA.y, dist);
+
+                dist = tmpA.DistanceTo(tmpB);
             }
-            B->pos.x = tmpB.x;
-            B->pos.y = tmpB.y;
-            A->pos.x += tmpA.x - rPos.x;
-            A->pos.y += tmpA.y - rPos.y;
+            B->pos = tmpB;
+            A->pos += tmpA - rPos;
         }
         else if (A->shape == Object::Shape::CIRCLE && B->shape == Object::Shape::RECT)
         {
@@ -490,20 +404,13 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
         {
             Circle* circleA = (Circle*)A;
             Circle* circleB = (Circle*)B;
-            float dist = CalculateModule(A->pos, B->pos);
+            float dist = A->pos.DistanceTo(B->pos);
 
-            fPoint frameDifB;
-            frameDifB.x = B->pos.x - B->pastPos.x;
-            frameDifB.y = B->pos.y - B->pastPos.y;
-            iPoint tmpB;
-            tmpB.x = B->pos.x;
-            tmpB.y = B->pos.y;
-            fPoint frameDifA;
-            frameDifA.x = A->pos.x - A->pastPos.x;
-            frameDifA.y = A->pos.y - A->pastPos.y;
-            iPoint tmpA;
-            tmpA.x = A->pos.x;
-            tmpA.y = A->pos.y;
+            iPoint frameDifB = B->pos - B->pastPos;
+            iPoint tmpB = B->pos;
+            iPoint frameDifA = A->pos - A->pastPos;
+            iPoint tmpA = A->pos;
+
             while (dist < (circleA->radius + circleB->radius))
             {
                 if (frameDifB.x > 0)
@@ -547,38 +454,25 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
                     tmpA.y++;
                     frameDifA.y++;
                 }
-                dist = CalculateModule(tmpA, tmpB);
+
+                dist = tmpA.DistanceTo(tmpB);
             }
-            B->pos.x = tmpB.x;
-            B->pos.y = tmpB.y;
-            A->pos.x = tmpA.x;
-            A->pos.y = tmpA.y;
+            B->pos = tmpB;
+            A->pos = tmpA;
         }
     }
 }
 
-void ModulePhysics::ResetSpeed(Object* A)
-{
-    A->speed.x = 0.0f;
-    A->speed.y = 0.0f;
-}
-
 void ModulePhysics::AddObject(Object* object)
 {
-    objects.add(object);
+    objects.Add(object);
 }
 
 void ModulePhysics::RemoveObject(Object* object)
 {
-    p2List_item<Object*>* tmp = objects.findNode(object);
+    p2List_item<Object*>* tmp = objects.FindNode(object);
     object->collider = nullptr;
-    objects.del(tmp);
-}
-
-float ModulePhysics::CalculateModule(iPoint A, iPoint B)
-{
-    float dist = sqrtf((float)abs(B.x - A.x) * (float)abs(B.x - A.x) + (float)abs(B.y - A.y) * (float)abs(B.y - A.y));
-    return dist;
+    objects.Del(tmp);
 }
 
 float ModulePhysics::ShortestDist(Object* A, Circle* B, iPoint& rPos)
@@ -616,9 +510,9 @@ float ModulePhysics::ShortestDist(Object* A, Circle* B, iPoint& rPos)
         // inside
         rPos.y = B->pos.y;
     }
-    LOG("A: %d,%d B: %d,%d rPos: %d,%d", A->collider->rect.x, A->collider->rect.y, B->pos.x, B->pos.y, rPos.x, rPos.y);
+
     // compute distance
-    return CalculateModule(rPos, B->pos);
+    return rPos.DistanceTo(B->pos);
 }
 
 void Collider::SetPos(int x, int y, int w, int h)
@@ -643,7 +537,6 @@ bool ModulePhysics::Intersects(Object* A, Object* B)
         iPoint tmp;
         Circle* circle = (Circle*)B;
         float dist = ShortestDist(A, circle, tmp);
-        LOG("dist: %f", dist);
         return (dist < circle->radius);
     }
     else if (A->shape == Object::Shape::CIRCLE && B->shape == Object::Shape::RECT)
@@ -654,8 +547,7 @@ bool ModulePhysics::Intersects(Object* A, Object* B)
     {
         Circle* circleA = (Circle*)A;
         Circle* circleB = (Circle*)B;
-        float dist = CalculateModule(A->pos, B->pos);
-        LOG("dist: %f", dist);
+        float dist = A->pos.DistanceTo(B->pos);
         return (dist < (circleA->radius + circleB->radius));
     }
 }
@@ -672,11 +564,6 @@ void ModulePhysics::Buoyancy(Object* A, Object* B)
         volume = (float)abs((A->collider->rect.y - B->collider->rect.y) - B->collider->rect.h) * B->collider->rect.w;
     }
     float tmpForce = B->force.y + (B->mass * gravity.y - (WATER_DENSITY)*volume * gravity.y);
-    B->speed.y *= DAMPEN;
-    //if (tmpForce < -600.0f)
-    //{
-    //    tmpForce = -600.0f;
-    //}
     B->force.y = tmpForce;
-    LOG("Force: %f, volum: %f", B->force.y, volume);
+    B->speed.y *= DAMPEN;
 }

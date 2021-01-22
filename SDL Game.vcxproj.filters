@@ -32,6 +32,9 @@
     <ClInclude Include="Animation.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />

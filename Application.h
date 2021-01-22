@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __APPLICATION_H__
+#define __APPLICATION_H__
 
 #include "p2List.h"
 #include "Globals.h"
@@ -6,14 +7,14 @@
 #include "PerfTimer.h"
 #include "Timer.h"
 
-#include "ModuleWindow.h"
-#include "ModuleRender.h"
-#include "ModuleTextures.h"
-#include "ModuleInput.h"
-#include "ModuleAudio.h"
-#include "ModulePlayer.h"
-#include "ModulePhysics.h"
-#include "ModuleSceneIntro.h"
+class ModuleRender;
+class ModuleWindow;
+class ModuleTextures;
+class ModuleInput;
+class ModuleAudio;
+class ModulePlayer;
+class ModuleSceneIntro;
+class ModulePhysics;
 
 class Application
 {
@@ -24,38 +25,37 @@ public:
 	ModuleInput* input;
 	ModuleAudio* audio;
 	ModulePlayer* player;
-	ModuleSceneIntro* scene_intro;
+	ModuleSceneIntro* sceneIntro;
 	ModulePhysics* physics;
 
 private:
+	p2List<Module*> listModules;
 
-	p2List<Module*> list_modules;
+	// Frame variables
+	PerfTimer pTimer;
+	uint64 frameCount = 0;
 
-    // Frame variables
-    PerfTimer ptimer;
-    uint64 frameCount = 0;
-
-    Timer startupTime;
-    Timer frameTime;
-    Timer lastSecFrameTime;
-    uint32 lastSecFrameCount = 0;
-    uint32 prevLastSecFrameCount = 0;
-    float dt = 0.0f;
-    float cappedMs = -1;
-    int cap = 60;
+	Timer startupTime;
+	Timer frameTime;
+	Timer lastSecFrameTime;
+	uint32 lastSecFrameCount = 0;
+	uint32 prevLastSecFrameCount = 0;
+	float dt = 0.0f;
+	float cappedMs = -1;
+	int cap = 60;
 
 public:
-
 	Application();
 	~Application();
 
 	bool Init();
-	update_status Update();
+	UpdateStatus Update();
 	bool CleanUp();
 
 private:
-
 	void AddModule(Module* mod);
-    void PrepareUpdate();
-    void FinishUpdate();
+	void PrepareUpdate();
+	void FinishUpdate();
 };
+
+#endif // !__APPLICATION_H__

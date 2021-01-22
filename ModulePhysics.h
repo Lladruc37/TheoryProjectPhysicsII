@@ -1,10 +1,13 @@
-#pragma once
+#ifndef __MODULE_PHYSICS_H__
+#define __MODULE_PHYSICS_H__
+
 #include "Module.h"
 #include "Globals.h"
 #include "p2Point.h"
+#include "Object.h"
 
-#define WATER_DENSITY 0.0025 //0.002
-#define DAMPEN 0.975 //0.97
+#define WATER_DENSITY 0.0025
+#define DAMPEN 0.975
 
 class Collider
 {
@@ -29,71 +32,46 @@ public:
 	void SetPos(int x, int y, int w, int h);
 
 	SDL_Rect rect;
-	bool pendingToDelete = false;
 	Type type;
 	Module* listener = nullptr;
-};
-
-struct Object
-{
-	enum Shape
-	{
-		RECT = 0,
-		CIRCLE
-	};
-
-	Object(iPoint pos, fPoint speed, fPoint force, float mass = 0.0f, Shape shape = Shape::RECT, Collider* c = nullptr, float angle = 0.0f) : pos(pos), speed(speed), force(force), mass(mass), shape(shape), collider(c), angle(angle)
-	{}
-
-	Object()
-	{}
-
-	iPoint pos;
-	iPoint pastPos;
-	fPoint speed;
-	fPoint pastSpeed;
-	fPoint force;
-	float mass;
-	Shape shape;
-	Collider* collider;
-	float angle;
-};
-
-struct Circle : public Object
-{
-	int radius;
 };
 
 class ModulePhysics : public Module
 {
 public:
-	ModulePhysics(Application* app, bool start_enabled = false);
+	ModulePhysics(Application* app, bool startEnabled = false);
 	~ModulePhysics();
 
 	bool Start();
-	update_status PreUpdate();
-    update_status Update(float dt);
-	update_status PostUpdate();
+	UpdateStatus PreUpdate();
+	UpdateStatus Update(float dt);
 	bool CleanUp();
 
-    void UpdatePhysics(Object* object, float dt);
-
-	// Adds a new collider to the list
-	//Collider* AddCollider(SDL_Rect rect, Collider::Type type, Module* listener = nullptr);
+	// Adds a new object to the list
 	void AddObject(Object* object);
+	// Removes an existing object from the list
 	void RemoveObject(Object* object);
 
 private:
+	// Calculates acceleration from force
 	fPoint Force2Accel(fPoint force, int mass);
+
+	// Updates gravity
 	void UpdateGravity();
 
-	// Checks if two rects are intersecting
-	//bool Intersects(const SDL_Rect& r) const;
+	// Steps an object in the world
+	void UpdatePhysics(Object* object, float dt);
+
+	// Checks if two objects are intersecting
 	bool Intersects(Object* A, Object* B);
-	void ResolveCollisions(Object* A, Object* B); // Requires Raycast for the future
-	void ResetSpeed(Object* A);
+
+	// Resolves two objects colliding
+	void ResolveCollisions(Object* A, Object* B);
+
+	// Calculates the shortest distance between a circle and a rect
 	float ShortestDist(Object* A, Circle* B, iPoint& rPos);
-	float CalculateModule(iPoint A, iPoint B);
+
+	// Applies buoyancy to the object B
 	void Buoyancy(Object* A, Object* B);
 
 public:
@@ -101,11 +79,13 @@ public:
 	bool debug;
 
 private:
-	// All existing colliders in the scene
-	//Collider* colliders[MAX_COLLIDERS] = { nullptr };
+	// List of all existing objects in the scene
 	p2List<Object*> objects;
 
-	// The collision matrix. Defines the interaction for two collider types
+	// The collision matrix
+	// Defines the interaction for two collider types
 	// If set to false, collider 1 will ignore collider 2
 	bool matrix[Collider::Type::MAX][Collider::Type::MAX];
 };
+
+#endif // !__MODULE_PHYSICS_H__

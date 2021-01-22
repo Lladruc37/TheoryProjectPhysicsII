@@ -1,17 +1,18 @@
-#pragma once
+#ifndef __MODULE_H__
+#define __MODULE_H__
 
 class Application;
 class Collider;
 
 class Module
 {
-private :
+private:
 	bool enabled;
 
 public:
 	Application* App;
 
-	Module(Application* parent, bool start_enabled = true) : App(parent), enabled(start_enabled)
+	Module(Application* parent, bool startEnabled = true) : App(parent), enabled(startEnabled)
 	{}
 
 	virtual ~Module()
@@ -24,7 +25,7 @@ public:
 
 	void Enable()
 	{
-		if(enabled == false)
+		if (enabled == false)
 		{
 			enabled = true;
 			Start();
@@ -33,16 +34,16 @@ public:
 
 	void Disable()
 	{
-		if(enabled == true)
+		if (enabled == true)
 		{
 			enabled = false;
 			CleanUp();
 		}
 	}
 
-	virtual bool Init() 
+	virtual bool Init()
 	{
-		return true; 
+		return true;
 	}
 
 	virtual bool Start()
@@ -50,26 +51,28 @@ public:
 		return true;
 	}
 
-	virtual update_status PreUpdate()
+	virtual UpdateStatus PreUpdate()
 	{
 		return UPDATE_CONTINUE;
 	}
 
-	virtual update_status Update(float dt)
+	virtual UpdateStatus Update(float dt)
 	{
 		return UPDATE_CONTINUE;
 	}
 
-	virtual update_status PostUpdate()
+	virtual UpdateStatus PostUpdate()
 	{
 		return UPDATE_CONTINUE;
 	}
 
-	virtual bool CleanUp() 
-	{ 
-		return true; 
+	virtual bool CleanUp()
+	{
+		return true;
 	}
 
-	virtual void OnCollision(Collider* c1, Collider* c2) {}
-
+	virtual void OnCollision(Collider* c1, Collider* c2)
+	{}
 };
+
+#endif // !__MODULE_H__

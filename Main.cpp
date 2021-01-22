@@ -6,7 +6,7 @@
 #pragma comment( lib, "SDL/libx86/SDL2.lib" )
 #pragma comment( lib, "SDL/libx86/SDL2main.lib" )
 
-enum main_states
+enum MainStates
 {
 	MAIN_CREATION,
 	MAIN_START,
@@ -17,26 +17,24 @@ enum main_states
 
 Application* App = NULL;
 
-int main(int argc, char ** argv)
+int main(int argc, char** argv)
 {
 	LOG("Starting game '%s'...", TITLE);
 
-	int main_return = EXIT_FAILURE;
-	main_states state = MAIN_CREATION;
+	int mainReturn = EXIT_FAILURE;
+	MainStates state = MAIN_CREATION;
 
 	while (state != MAIN_EXIT)
 	{
 		switch (state)
 		{
 		case MAIN_CREATION:
-
 			LOG("-------------- Application Creation --------------");
 			App = new Application();
 			state = MAIN_START;
 			break;
 
 		case MAIN_START:
-
 			LOG("-------------- Application Init --------------");
 			if (App->Init() == false)
 			{
@@ -48,42 +46,39 @@ int main(int argc, char ** argv)
 				state = MAIN_UPDATE;
 				LOG("-------------- Application Update --------------");
 			}
-
 			break;
 
 		case MAIN_UPDATE:
 		{
-			int update_return = App->Update();
+			int updateReturn = App->Update();
 
-			if (update_return == UPDATE_ERROR)
+			if (updateReturn == UPDATE_ERROR)
 			{
 				LOG("Application Update exits with ERROR");
 				state = MAIN_EXIT;
 			}
 
-			if (update_return == UPDATE_STOP)
+			if (updateReturn == UPDATE_STOP)
 				state = MAIN_FINISH;
 		}
-			break;
+		break;
 
 		case MAIN_FINISH:
-
 			LOG("-------------- Application CleanUp --------------");
 			if (App->CleanUp() == false)
 			{
 				LOG("Application CleanUp exits with ERROR");
 			}
 			else
-				main_return = EXIT_SUCCESS;
-
+			{
+				mainReturn = EXIT_SUCCESS;
+			}
 			state = MAIN_EXIT;
-
 			break;
-
 		}
 	}
 
 	delete App;
 	LOG("Exiting game '%s'...\n", TITLE);
-	return main_return;
+	return mainReturn;
 }

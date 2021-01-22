@@ -73,6 +73,7 @@
     <ClInclude Include="Application.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="ModulePhysics.h" />
+    <ClInclude Include="Object.h" />
     <ClInclude Include="p2List.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="ModuleAudio.h" />

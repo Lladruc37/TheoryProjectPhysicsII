@@ -1,12 +1,13 @@
-#pragma once
+#ifndef __MODULE_SCENE_INTRO_H__
+#define __MODULE_SCENE_INTRO_H__
+
 #include "Module.h"
 #include "Animation.h"
-#include "p2DynArray.h"
 #include "Globals.h"
+#include "p2DynArray.h"
+#include "Object.h"
 
-class Collider;
-struct Object;
-struct Circle;
+struct SDL_Texture;
 
 enum Scene
 {
@@ -24,16 +25,17 @@ enum GameScreen
 class ModuleSceneIntro : public Module
 {
 public:
-	ModuleSceneIntro(Application* app, bool start_enabled = true);
-	~ModuleSceneIntro();
+    ModuleSceneIntro(Application* app, bool startEnabled = true);
+    ~ModuleSceneIntro();
 
-	bool Start();
-    update_status PreUpdate();
-	update_status Update(float dt);
-    update_status PostUpdate();
-	bool CleanUp();
+    bool Start();
+    UpdateStatus PreUpdate();
+    UpdateStatus Update(float dt);
+    UpdateStatus PostUpdate();
+    bool CleanUp();
     void OnCollision(Collider* c1, Collider* c2);
 
+    // Create/Delete objects from scene
     void CreateAsteroids();
     void DeleteAsteroids();
     void CreateMoon();
@@ -46,14 +48,8 @@ public:
     GameScreen currentScreen = EARTH;
 
     // GAME //
-    SDL_Texture* bgEarth = nullptr;
-    SDL_Texture* bgWater = nullptr;
-    SDL_Texture* bgAsteroids = nullptr;
-    SDL_Texture* bgMoon = nullptr;
     bool startGame = false;
-    SDL_Texture* flag;
 
-    SDL_Texture* asteroidTxt = nullptr;
     Circle top;
     Circle mid[3];
     Circle bot[4];
@@ -61,10 +57,19 @@ public:
     Object land;
     Object water;
 
+    SDL_Texture* bgEarth = nullptr;
+    SDL_Texture* bgWater = nullptr;
+    SDL_Texture* bgAsteroids = nullptr;
+    SDL_Texture* bgMoon = nullptr;
+    SDL_Texture* flagTxt = nullptr;
+    SDL_Texture* asteroidTxt = nullptr;
+
     // WIN/LOSE //
     SDL_Texture* gameOverTxt = nullptr;
     SDL_Texture* victoryTxt = nullptr;
 
     // TITLE SCREEN //
-    SDL_Texture* backgroundTitle = nullptr;
+    SDL_Texture* bgTitle = nullptr;
 };
+
+#endif // !__MODULE_SCENE_INTRO_H__

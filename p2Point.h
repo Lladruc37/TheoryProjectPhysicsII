@@ -11,7 +11,6 @@ template<class TYPE>
 class p2Point
 {
 public:
-
 	TYPE x, y;
 
 	p2Point()
@@ -23,10 +22,16 @@ public:
 		y = p.y;
 	}
 
-	// Math ------------------------------------------------
-	p2Point operator -(const p2Point &v) const
+	p2Point(const TYPE& newX, const TYPE& newY)
 	{
-		p2Vector2 r;
+		x = newX;
+		y = newY;
+	}
+
+	// Math ------------------------------------------------
+	p2Point operator -(const p2Point& v) const
+	{
+		p2Point r;
 
 		r.x = x - v.x;
 		r.y = y - v.y;
@@ -34,9 +39,9 @@ public:
 		return(r);
 	}
 
-	p2Point operator + (const p2Point &v) const
+	p2Point operator +(const p2Point& v) const
 	{
-		p2Vector2 r;
+		p2Point r;
 
 		r.x = x + v.x;
 		r.y = y + v.y;
@@ -44,7 +49,7 @@ public:
 		return(r);
 	}
 
-	const p2Point& operator -=(const p2Point &v)
+	const p2Point& operator -=(const p2Point& v)
 	{
 		x -= v.x;
 		y -= v.y;
@@ -52,7 +57,7 @@ public:
 		return(*this);
 	}
 
-	const p2Point& operator +=(const p2Point &v)
+	const p2Point& operator +=(const p2Point& v)
 	{
 		x += v.x;
 		y += v.y;
@@ -90,31 +95,34 @@ public:
 		return(*this);
 	}
 
-    p2Point& Sqrtf(float x)
-    {
-        float number;
-        float sqrt;
-        sqrt = x / 2;
-        number = 0;
-        if (x <= 0)
-        {
-            return number;
-        }
-        while (sqrt != number)
-        {
-            number = sqrt;
-            sqrt = (x / number + number) / 2;
-        }
-        return sqrt;
-    }
+	p2Point& Sqrtf(float x)
+	{
+		float number;
+		float sqrt;
+		sqrt = x / 2;
+		number = 0;
+		if (x <= 0)
+		{
+			return number;
+		}
+
+		while (sqrt != number)
+		{
+			number = sqrt;
+			sqrt = (x / number + number) / 2;
+		}
+		return sqrt;
+	}
 
 	// Distances ---------------------------------------------
-	TYPE DistanceTo(const p2Point& v) const
+	
+	// Returns the distance between two points (always returns float)
+	float DistanceTo(const p2Point& v) const
 	{
-		TYPE fx = x - v.x;
-		TYPE fy = y - v.y;
+		float fx = x - v.x;
+		float fy = y - v.y;
 
-		return (TYPE) sqrt((float) (fx*fx) + (fy*fy));
+		return sqrtf((fx * fx) + (fy * fy));
 	}
 };
 
