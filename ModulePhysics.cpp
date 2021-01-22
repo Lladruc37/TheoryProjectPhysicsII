@@ -97,7 +97,7 @@ update_status ModulePhysics::PreUpdate()
 
             c2 = tmp2->data->collider;
 
-            if (Intersects(tmp->data,tmp2->data) && matrix[c1->type][c2->type] && App->player->godMode == false)
+            if (matrix[c1->type][c2->type] && Intersects(tmp->data,tmp2->data) && App->player->godMode == false)
             {
                 ResolveCollisions(tmp->data, tmp2->data);
                 if (c1->listener)
@@ -213,50 +213,15 @@ void ModulePhysics::UpdateGravity()
 
 
 
-            iPoint rPos;
-            // find closest X
-            if (player->collider->rect.x > moon->pos.x)
-            {
-                // left
-                rPos.x = player->collider->rect.x;
-            }
-            else if (player->collider->rect.x + player->collider->rect.w < moon->pos.x)
-            {
-                // right
-                rPos.x = player->collider->rect.x + player->collider->rect.w;
-            }
-            else
-            {
-                // inside
-                rPos.x = moon->pos.x;
-            }
+            float dist = CalculateModule(player->pos, moon->pos);
 
-            // find closest Y
-            if (player->collider->rect.y > moon->pos.y)
-            {
-                // top
-                rPos.y = player->collider->rect.y;
-            }
-            else if (player->collider->rect.y + player->collider->rect.h < moon->pos.y)
-            {
-                // bot
-                rPos.y = player->collider->rect.y + player->collider->rect.h;
-            }
-            else
-            {
-                // inside
-                rPos.y = moon->pos.y;
-            }
-            //LOG("A: %d,%d B: %d,%d rPos: %d,%d", player->collider->rect.x, player->collider->rect.y, moon->pos.x, moon->pos.y, rPos.x, rPos.y);
-            // compute distance
-            float dist = CalculateModule(moon->pos, rPos);
             //LOG("dist: %f", dist);
             //LOG("ovni: %d,%d moon:%d,%d", rPos.x, rPos.y, moon->pos.x, moon->pos.y);
 
 
             fPoint dif;
-            dif.x = rPos.x - moon->pos.x;
-            dif.y = rPos.y - moon->pos.y;
+            dif.x = player->pos.x - moon->pos.x;
+            dif.y = player->pos.y - moon->pos.y;
             float otherDist = 500 - dist;
             if (otherDist <= 0.0f)
             {
@@ -452,42 +417,7 @@ void ModulePhysics::ResolveCollisions(Object* A, Object* B)
         {
             Circle* circle = (Circle*)B;
             iPoint rPos;
-            // find closest X
-            if (A->collider->rect.x > B->pos.x)
-            {
-                // left
-                rPos.x = A->collider->rect.x;
-            }
-            else if (A->collider->rect.x + A->collider->rect.w < B->pos.x)
-            {
-                // right
-                rPos.x = A->collider->rect.x + A->collider->rect.w;
-            }
-            else
-            {
-                // inside
-                rPos.x = B->pos.x;
-            }
-
-            // find closest Y
-            if (A->collider->rect.y > B->pos.y)
-            {
-                // top
-                rPos.y = A->collider->rect.y;
-            }
-            else if (A->collider->rect.y + A->collider->rect.h < B->pos.y)
-            {
-                // bot
-                rPos.y = A->collider->rect.y + A->collider->rect.h;
-            }
-            else
-            {
-                // inside
-                rPos.y = B->pos.y;
-            }
-
-            // compute distance
-            float dist = CalculateModule(rPos, B->pos);
+            float dist = ShortestDist(A, circle, rPos);
 
             fPoint frameDifB;
             frameDifB.x = B->pos.x - B->pastPos.x;
@@ -651,9 +581,8 @@ float ModulePhysics::CalculateModule(iPoint A, iPoint B)
     return dist;
 }
 
-float ModulePhysics::ShortestDist(Object* A, Circle* B)
+float ModulePhysics::ShortestDist(Object* A, Circle* B, iPoint& rPos)
 {
-    iPoint rPos;
     // find closest X
     if (A->collider->rect.x > B->pos.x)
     {
@@ -711,8 +640,9 @@ bool ModulePhysics::Intersects(Object* A, Object* B)
     }
     else if (A->shape == Object::Shape::RECT && B->shape == Object::Shape::CIRCLE)
     {
+        iPoint tmp;
         Circle* circle = (Circle*)B;
-        float dist = ShortestDist(A, circle);
+        float dist = ShortestDist(A, circle, tmp);
         LOG("dist: %f", dist);
         return (dist < circle->radius);
     }

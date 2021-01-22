@@ -92,7 +92,7 @@ private:
 	bool Intersects(Object* A, Object* B);
 	void ResolveCollisions(Object* A, Object* B); // Requires Raycast for the future
 	void ResetSpeed(Object* A);
-	float ShortestDist(Object* A, Circle* B);
+	float ShortestDist(Object* A, Circle* B, iPoint& rPos);
 	float CalculateModule(iPoint A, iPoint B);
 	void Buoyancy(Object* A, Object* B);
 

@@ -299,7 +299,7 @@ void ModuleSceneIntro::CreateAsteroids()
     top.mass = 1.0f;
     top.radius = 35;
     top.pos.x = -70;
-    top.pos.y = 145;
+    top.pos.y = 160;
     top.angle = (float)(rand() % 360);
     top.speed.x = 550.0f;
     top.shape = Object::Shape::CIRCLE;
@@ -325,7 +325,7 @@ void ModuleSceneIntro::CreateAsteroids()
         mid[i].mass = 1.0f;
         mid[i].radius = 35;
         mid[i].pos.x = App->renderer->camera.w + 105 - (i * 350);//70
-        mid[i].pos.y = 420;//375
+        mid[i].pos.y = 435;//375
         mid[i].angle = (float)(rand() % 360);
         mid[i].speed.x = -300.0f;
         mid[i].shape = Object::Shape::CIRCLE;
@@ -353,7 +353,7 @@ void ModuleSceneIntro::CreateAsteroids()
         bot[i].mass = 1.0f;
         bot[i].radius = 35;
         bot[i].pos.x = 105 + (i * 262);//70
-        bot[i].pos.y = 660;//615
+        bot[i].pos.y = 675;//615
         bot[i].angle = (float)(rand() % 360);
         bot[i].speed.x = 165.0f;
         bot[i].shape = Object::Shape::CIRCLE;
