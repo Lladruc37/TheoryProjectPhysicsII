@@ -50,6 +50,7 @@ Will you be able to complete the mission?
  - Guillem Álava Burgueño ([Github](https://github.com/WillyTrek19))
  - Sergi Colomer Ferrer ([Github](https://github.com/Lladruc37))
  - Sebastian Delgado Vargas ([Github](https://github.com/Vinskky))
+ 
  (Link to the github project [here](https://github.com/Lladruc37/TheoryProjectPhysicsII/))
  
   ![Logo](https://github.com/Lladruc37/TheoryProjectPhysicsII/blob/main/Screenshots/logo.png)
