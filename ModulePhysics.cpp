@@ -88,13 +88,9 @@ UpdateStatus ModulePhysics::PreUpdate()
             {
                 ResolveCollisions(tmp->data, tmp2->data);
                 if (c1->listener)
-                {
                     c1->listener->OnCollision(c1, c2);
-                }
                 if (c2->listener)
-                {
                     c2->listener->OnCollision(c2, c1);
-                }
             }
             tmp2 = tmp2->next;
         }
@@ -111,9 +107,7 @@ UpdateStatus ModulePhysics::Update(float dt)
     while (tmp != nullptr)
     {
         if (tmp->data->mass != 0.0f)
-        {
             UpdatePhysics(tmp->data, dt);
-        }
         tmp = tmp->next;
     }
     return UPDATE_CONTINUE;
@@ -159,13 +153,9 @@ void ModulePhysics::UpdateGravity()
         while (tmp != nullptr)
         {
             if (tmp->data->collider->type == Collider::Type::PLAYER)
-            {
                 player = tmp->data;
-            }
             else if (tmp->data->collider->type == Collider::Type::MOON)
-            {
                 moon = (Circle*)tmp->data;
-            }
             tmp = tmp->next;
         }
 
@@ -184,39 +174,24 @@ void ModulePhysics::UpdateGravity()
 
             // Set gravity according to the quadrant
             if (dif.x > 0.0f && dif.y > 0.0f) //top left
-            {
                 gravity = { moonMass * player->mass / -(dif.x * dif.x),moonMass * player->mass / -(dif.y * dif.y) };
-            }
             else if (dif.x > 0.0f && dif.y < 0.0f) // top right
-            {
                 gravity = { moonMass * player->mass / -(dif.x * dif.x),moonMass * player->mass / (dif.y * dif.y) };
-            }
             else if (dif.x < 0.0f && dif.y > 0.0f) //bot left
-            {
                 gravity = { moonMass * player->mass / (dif.x * dif.x),moonMass * player->mass / -(dif.y * dif.y) };
-            }
             else if (dif.x < 0.0f && dif.y < 0.0f) //bot right
-            {
                 gravity = { moonMass * player->mass / (dif.x * dif.x),moonMass * player->mass / (dif.y * dif.y) };
-            }
 
             // Cap gravity
             if (gravity.x > 180.0f)
-            {
                 gravity.x = 180.0f;
-            }
             else if (gravity.x < -180.0f)
-            {
                 gravity.x = -180.0f;
-            }
+
             if (gravity.y > 180.0f)
-            {
                 gravity.y = 180.0f;
-            }
             else if (gravity.y < -180.0f)
-            {
                 gravity.y = -180.0f;
-            }
         }
         break;
     }
@@ -256,15 +231,19 @@ void ModulePhysics::UpdatePhysics(Object* object, float dt)
             object->collider->SetPos(object->pos.x, object->pos.y, object->collider->rect.w, object->collider->rect.h);
         }
     }
-    if (object->speed.y < 0)
+
+    if (object->collider->type == Collider::Type::PLAYER)
     {
-        App->player->isMovingUp = true;
-        App->player->isMovingDown = false;
-    }
-    else
-    {
-        App->player->isMovingUp = false;
-        App->player->isMovingDown = true;
+        if (object->speed.y < 0)
+        {
+            App->player->isMovingUp = true;
+            App->player->isMovingDown = false;
+        }
+        else
+        {
+            App->player->isMovingUp = false;
+            App->player->isMovingDown = true;
+        }
     }
 }
 
@@ -487,38 +466,26 @@ void ModulePhysics::RemoveObject(Object* object)
 float ModulePhysics::ShortestDist(Object* A, Circle* B, iPoint& rPos)
 {
     // find closest X
+    // left
     if (A->collider->rect.x > B->pos.x)
-    {
-        // left
         rPos.x = A->collider->rect.x;
-    }
+    // right
     else if (A->collider->rect.x + A->collider->rect.w < B->pos.x)
-    {
-        // right
         rPos.x = A->collider->rect.x + A->collider->rect.w;
-    }
+    // inside
     else
-    {
-        // inside
         rPos.x = B->pos.x;
-    }
 
     // find closest Y
+    // top
     if (A->collider->rect.y > B->pos.y)
-    {
-        // top
         rPos.y = A->collider->rect.y;
-    }
+    // bot
     else if (A->collider->rect.y + A->collider->rect.h < B->pos.y)
-    {
-        // bot
         rPos.y = A->collider->rect.y + A->collider->rect.h;
-    }
+    // inside
     else
-    {
-        // inside
         rPos.y = B->pos.y;
-    }
 
     // compute distance
     return rPos.DistanceTo(B->pos);
@@ -565,13 +532,10 @@ void ModulePhysics::Buoyancy(Object* A, Object* B)
 {
     float volume;
     if (A->collider->rect.y <= B->collider->rect.y)
-    {
         volume = B->collider->rect.h * B->collider->rect.w;
-    }
     else
-    {
         volume = (float)abs((A->collider->rect.y - B->collider->rect.y) - B->collider->rect.h) * B->collider->rect.w;
-    }
+
     float tmpForce = B->force.y + (B->mass * gravity.y - (WATER_DENSITY)*volume * gravity.y);
     B->force.y = tmpForce;
     B->speed.y *= DAMPEN;
@@ -581,6 +545,4 @@ void ModulePhysics::UpdateDrag(fPoint direction)
 {
     dragDirection.x = (direction.x != 0 ? -1 * direction.x : 0);
     dragDirection.y = (direction.y != 0 ? -1 * direction.y : 0);
-    
-    //LOG("Drag direction = (%f,%f)", dragDirection.x, dragDirection.y);
 }

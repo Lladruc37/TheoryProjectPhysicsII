@@ -30,13 +30,9 @@ public:
 		if (currentFrame >= totalFrames)
 		{
 			if (loop)
-			{
 				currentFrame = 0.0f;
-			}
 			else
-			{
 				currentFrame = totalFrames - 1;
-			}
 			++loopCount;
 		}
 	}

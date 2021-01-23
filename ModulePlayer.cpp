@@ -40,6 +40,9 @@ bool ModulePlayer::Start()
     explosionFx = App->audio->LoadFx("Assets/Sound/Fx/expurosion.wav");
     flagFx = App->audio->LoadFx("Assets/Sound/Fx/checkpoint.wav");
 
+    wasMovingFx = false;
+    movingChannel = -1;
+
     return true;
 }
 
@@ -68,127 +71,81 @@ UpdateStatus ModulePlayer::PreUpdate()
             App->sceneIntro->CreateEarth(checkpoint);
         }
     }
+
     if (App->input->GetKey(SDL_SCANCODE_F11) == KEY_DOWN && !victory)
     {
         isDestroyed = true;
         App->audio->PlayFx(explosionFx);
     }
+
     if (App->input->GetKey(SDL_SCANCODE_F2) == KEY_DOWN && !victory)
-    {
         godMode = !godMode;
-    }
 
     if (!isDestroyed && !victory)
     {
         if (App->input->GetKey(SDL_SCANCODE_Q) == KEY_REPEAT)
-        {
             player.angle -= 1.0f;
-        }
+
         if (App->input->GetKey(SDL_SCANCODE_E) == KEY_REPEAT)
-        {
             player.angle += 1.0f;
-        }
 
         if (player.angle >= 360.0f)
-        {
             player.angle = player.angle - 360.0f;
-        }
+
         if (player.angle < 0.0f)
-        {
             player.angle = 360 + player.angle;
-        }
 
         if (App->input->GetKey(SDL_SCANCODE_W) == KEY_REPEAT)
-        {
             player.force.y = -500.0f * player.mass;
-            if (!isMovingUp)
-            {
-                isMovingUp = true;
-                movingChannelOne = App->audio->PlayFx(movingFx, -1);
-            }
-        }
-        else
-        {
-            if (isMovingUp)
-            {
-                isMovingUp = false;
-                App->audio->StopFx(movingChannelOne);
-            }
-        }
 
         if (App->input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT)
         {
             player.force.x = -500.0f * player.mass;
-            if (!isMovingLeft)
-            {
-                isMovingLeft = true;
-                movingChannelTwo = App->audio->PlayFx(movingFx, -1);
-            }
 
             if (player.angle >= 340.0f && App->sceneIntro->currentScreen == GameScreen::EARTH)
-            {
                 player.angle -= 1.0f;
-            }
         }
         else
         {
-            if (isMovingLeft)
-            {
-                isMovingLeft = false;
-                App->audio->StopFx(movingChannelTwo);
-            }
-
             if (player.angle <= 360.0f && player.angle > 180.0f && App->sceneIntro->currentScreen != GameScreen::MOON)
-            {
                 player.angle += 1.0f;
-            }
         }
 
         if (App->input->GetKey(SDL_SCANCODE_S) == KEY_REPEAT)
-        {
             player.force.y = 500.0f * player.mass;
-
-            if (!isMovingDown)
-            {
-                isMovingDown = true;
-                movingChannelThree = App->audio->PlayFx(movingFx, -1);
-            }
-        }
-        else
-        {
-            if (isMovingDown)
-            {
-                isMovingDown = false;
-                App->audio->StopFx(movingChannelThree);
-            }
-        }
 
         if (App->input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT)
         {
             player.force.x = 500.0f * player.mass;
 
-            if (!isMovingRight)
-            {
-                isMovingRight = true;
-                movingChannelFour = App->audio->PlayFx(movingFx, -1);
-            }
-
             if (player.angle <= 20.0f && App->sceneIntro->currentScreen == GameScreen::EARTH)
-            {
                 player.angle += 1.0f;
+        }
+        else
+        {
+            if (player.angle >= 0 && player.angle < 180.0f && App->sceneIntro->currentScreen != GameScreen::MOON)
+                player.angle -= 1.0f;
+        }
+
+        if (App->input->GetKey(SDL_SCANCODE_W) == KEY_REPEAT ||
+            App->input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT ||
+            App->input->GetKey(SDL_SCANCODE_S) == KEY_REPEAT ||
+            App->input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT ||
+            App->input->GetKey(SDL_SCANCODE_Q) == KEY_REPEAT ||
+            App->input->GetKey(SDL_SCANCODE_E) == KEY_REPEAT)
+        {
+            if (!wasMovingFx)
+            {
+                wasMovingFx = true;
+                movingChannel = App->audio->PlayFx(movingFx, -1);
             }
         }
         else
         {
-            if (isMovingRight)
+            if (wasMovingFx)
             {
-                isMovingRight = false;
-                App->audio->StopFx(movingChannelFour);
-            }
-
-            if (player.angle >= 0 && player.angle < 180.0f && App->sceneIntro->currentScreen != GameScreen::MOON)
-            {
-                player.angle -= 1.0f;
+                wasMovingFx = false;
+                App->audio->StopFx(movingChannel);
             }
         }
 
@@ -199,11 +156,19 @@ UpdateStatus ModulePlayer::PreUpdate()
     }
     else
     {
+        if (wasMovingFx)
+        {
+            wasMovingFx = false;
+            App->audio->StopFx(movingChannel);
+        }
+
         if (isDestroyed && App->input->GetKey(SDL_SCANCODE_R) == KEY_DOWN)
         {
             CreatePlayer();
             victory = false;
             onceMusic = true;
+
+            movingChannel = -1;
 
             App->sceneIntro->currentScreen = GameScreen::EARTH;
             App->sceneIntro->CreateEarth(checkpoint);
@@ -233,32 +198,26 @@ UpdateStatus ModulePlayer::Update(float dt)
     if (!isDestroyed && !victory)
     {
         // Player boundries
+
+        // Left bound
         if ((player.pos.x - player.radius) <= 0)
-        {
-            // Left bound
             player.pos.x = player.radius + 1;
-        }
+        // Right bound
         if ((player.pos.x + player.radius) > (App->renderer->camera.w))
-        {
-            // Right bound
             player.pos.x = App->renderer->camera.w - player.radius - 1;
-        }
+        // Top bound
         if ((player.pos.y - player.radius) <= 0 && App->sceneIntro->currentScreen == GameScreen::MOON)
-        {
-            // Top bound
             player.pos.y = player.radius + 1;
-        }
+        // Bottom bound
         if ((player.pos.y + player.radius) > (App->renderer->camera.h) && App->sceneIntro->currentScreen == GameScreen::EARTH)
-        {
-            // Bottom bound
             player.pos.y = App->renderer->camera.h - player.radius - 1;
-        }
 
         // Speed cap
         if (player.speed.y > 500.0f)
             player.speed.y = 500.0f;
         else if (player.speed.y < -500.0f)
             player.speed.y = -500.0f;
+
         if (player.speed.x > 500.0f)
             player.speed.x = 500.0f;
         else if (player.speed.x < -500.0f)
@@ -346,13 +305,10 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
                     // Get player angle
                     float playerAngle = 0.0f;
                     if (player.angle < 0)
-                    {
                         playerAngle = 360.0f - player.angle;
-                    }
                     else
-                    {
                         playerAngle = player.angle;
-                    }
+
                     // Place flag depending on what quadrant of the moon the player is
                     if (player.pos.x <= App->sceneIntro->moon.pos.x && player.pos.y <= App->sceneIntro->moon.pos.y)
                     {
@@ -442,38 +398,23 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
 
 void ModulePlayer::UpdateDrag()
 {
-    if (isMovingRight == true && isMovingUp == true) //TopRight Direction +,+
-    {
+    if (isMovingRight == true && isMovingUp == true) //TopRight Direction +,-
         direction = { 1.0f,-1.0f };
-    }
-    else if (isMovingRight == true && isMovingDown == true) //BottomRight Direction -,+
-    {
+    else if (isMovingRight == true && isMovingDown == true) //BottomRight Direction +,+
         direction = { -1.0f,-1.0f };
-    }
-    else if (isMovingLeft == true && isMovingDown == true) //BottomLeft Direction -,- => +,+
-    {
+    else if (isMovingLeft == true && isMovingDown == true) //BottomLeft Direction -,+
         direction = { -1.0f,1.0f };
-    }
-    else if (isMovingLeft == true && isMovingUp == true) //TopLeft Direction +,- 
-    {
+    else if (isMovingLeft == true && isMovingUp == true) //TopLeft Direction -,-
         direction = { 1.0f,1.0f };
-    }
     else if (isMovingDown == true)
-    {
         direction = { 0.0f,1.0f };
-    }
     else if (isMovingUp == true)
-    {
         direction = { 0.0f,-1.0f };
-    }
     else if (isMovingRight == true)
-    {
         direction = { 1.0f,0.0f };
-    }
     else if (isMovingLeft == true)
-    {
         direction = { -1.0f,0.0f };
-    }
+
     App->physics->UpdateDrag(direction);
 }
 
@@ -507,7 +448,5 @@ void ModulePlayer::CreatePlayer()
 void ModulePlayer::DeletePlayer()
 {
     if (player.collider != nullptr)
-    {
         App->physics->RemoveObject(&player);
-    }
 }

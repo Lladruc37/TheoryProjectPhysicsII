@@ -75,13 +75,9 @@ bool ModuleAudio::PlayMusic(const char* path, float fadeTime)
 	if (music != NULL)
 	{
 		if (fadeTime > 0.0f)
-		{
 			Mix_FadeOutMusic((int)(fadeTime * 1000.0f));
-		}
 		else
-		{
 			Mix_HaltMusic();
-		}
 
 		// this call blocks until fade out is done
 		Mix_FreeMusic(music);

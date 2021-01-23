@@ -49,12 +49,11 @@ public:
     bool isMovingLeft;
     bool isMovingRight;
     bool isMovingDown;
+
+    bool wasMovingFx;
     uint movingFx;
     uint explosionFx;
-    uint movingChannelOne;
-    uint movingChannelTwo;
-    uint movingChannelThree;
-    uint movingChannelFour;
+    uint movingChannel;
 };
 
 #endif // !__MODULE_PLAYER_H__

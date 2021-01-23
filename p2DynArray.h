@@ -72,9 +72,7 @@ public:
 	void PushBack(const VALUE& element)
 	{
 		if (numElements >= memCapacity)
-		{
 			Alloc(memCapacity + DYN_ARRAY_BLOCK_SIZE);
-		}
 
 		data[numElements++] = element;
 	}
@@ -109,9 +107,7 @@ public:
 			Alloc(memCapacity + DYN_ARRAY_BLOCK_SIZE);
 
 		for (uint i = numElements; i > position; --i)
-		{
 			data[i] = data[i - 1];
-		}
 
 		data[position] = element;
 		++numElements;

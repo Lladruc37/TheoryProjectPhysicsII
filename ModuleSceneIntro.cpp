@@ -67,9 +67,7 @@ UpdateStatus ModuleSceneIntro::PreUpdate()
     {
     case TITLE_SCREEN:
         if (App->input->GetKey(SDL_SCANCODE_RETURN) == KeyState::KEY_DOWN)
-        {
             startGame = true;
-        }
         break;
 
     case GAME:
@@ -181,19 +179,16 @@ UpdateStatus ModuleSceneIntro::PostUpdate()
         {
         case EARTH:
             if (!App->player->checkpoint)
-            {
                 App->renderer->Blit(bgEarth, 0, 0, true);
-            }
             else
-            {
                 App->renderer->Blit(bgWater, 0, 0, true);
-            }
 
             if (App->physics->debug && land.collider != nullptr)
                 App->renderer->DrawQuad(land.collider->rect, 255, 0, 0, 100);
 
             if (App->physics->debug && water.collider != nullptr)
                 App->renderer->DrawQuad(water.collider->rect, 0, 0, 255, 100);
+
             break;
 
         case ASTEROIDS:
@@ -236,13 +231,9 @@ UpdateStatus ModuleSceneIntro::PostUpdate()
         }
 
         if (App->player->isDestroyed)
-        {
             App->renderer->Blit(gameOverTxt, 0, App->renderer->camera.h / 2 - 90, false);
-        }
         else if (App->player->victory)
-        {
             App->renderer->Blit(victoryTxt, 0, App->renderer->camera.h / 2 - 160, false);
-        }
         break;
     }
     return UPDATE_CONTINUE;

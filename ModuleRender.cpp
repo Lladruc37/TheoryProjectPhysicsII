@@ -141,13 +141,9 @@ bool ModuleRender::DrawLine(int x1, int y1, int x2, int y2, Uint8 r, Uint8 g, Ui
 	int result = -1;
 
 	if (useCamera)
-	{
 		result = SDL_RenderDrawLine(renderer, camera.x + x1 * SCREEN_SIZE, camera.y + y1 * SCREEN_SIZE, camera.x + x2 * SCREEN_SIZE, camera.y + y2 * SCREEN_SIZE);
-	}
 	else
-	{
 		result = SDL_RenderDrawLine(renderer, x1 * SCREEN_SIZE, y1 * SCREEN_SIZE, x2 * SCREEN_SIZE, y2 * SCREEN_SIZE);
-	}
 
 	if (result != 0)
 	{
@@ -185,13 +181,9 @@ bool ModuleRender::DrawCircle(int x, int y, int radius, Uint8 r, Uint8 g, Uint8 
 	}
 
 	if (filled)
-	{
 		return FillCircle(x, y, radius, r, g, b, a, useCamera);
-	}
 	else
-	{
 		return ret;
-	}
 }
 
 bool ModuleRender::FillCircle(int x, int y, int radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a, bool useCamera)

@@ -70,9 +70,7 @@ int main(int argc, char** argv)
 				LOG("Application CleanUp exits with ERROR");
 			}
 			else
-			{
 				mainReturn = EXIT_SUCCESS;
-			}
 			state = MAIN_EXIT;
 			break;
 		}

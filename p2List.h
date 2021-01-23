@@ -116,13 +116,9 @@ public:
 			item->prev->next = item->next;
 
 			if (item->next != NULL)
-			{
 				item->next->prev = item->prev;
-			}
 			else
-			{
 				end = item->prev;
-			}
 		}
 		else
 		{
