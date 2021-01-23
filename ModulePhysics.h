@@ -52,6 +52,8 @@ public:
 	// Removes an existing object from the list
 	void RemoveObject(Object* object);
 
+	void UpdateDrag(fPoint direction);
+
 private:
 	// Calculates acceleration from force
 	fPoint Force2Accel(fPoint force, int mass);
@@ -73,8 +75,6 @@ private:
 
 	// Applies buoyancy to the object B
 	void Buoyancy(Object* A, Object* B);
-
-	void UpdateDrag(fPoint direction);
 
 public:
 	fPoint gravity;

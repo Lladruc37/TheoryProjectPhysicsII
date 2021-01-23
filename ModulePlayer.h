@@ -7,7 +7,7 @@
 #include "p2Point.h"
 #include "Object.h"
 
-#define DRAG_FORCE 200.0f
+#define DRAG_FORCE 100.0f
 
 class ModulePlayer : public Module
 {
@@ -23,7 +23,7 @@ public:
     UpdateStatus PostUpdate();
     bool CleanUp();
     void OnCollision(Collider* c1, Collider* c2);
-    void UpdatePlayerDirection();
+    void UpdateDrag();
 
 public:
     SDL_Texture* playerTex;

@@ -191,6 +191,11 @@ UpdateStatus ModulePlayer::PreUpdate()
                 player.angle -= 1.0f;
             }
         }
+
+        // Apply drag
+        UpdateDrag();
+        if (App->sceneIntro->currentScreen == GameScreen::EARTH)
+            player.force += { App->physics->dragDirection.x* DRAG_FORCE, App->physics->dragDirection.y* DRAG_FORCE };
     }
     else
     {
@@ -258,10 +263,6 @@ UpdateStatus ModulePlayer::Update(float dt)
             player.speed.x = 500.0f;
         else if (player.speed.x < -500.0f)
             player.speed.x = -500.0f;
-
-        //Current direction of player
-        UpdatePlayerDirection();
-        //LOG("direction = (%f,%f)", direction.x, direction.y);
     }
     else
     {
@@ -287,12 +288,6 @@ UpdateStatus ModulePlayer::PostUpdate()
     else
     {
         App->renderer->Blit(playerTex, player.pos.x - 60, player.pos.y - 28, false, (double)player.angle);
-        if (App->sceneIntro->currentScreen == GameScreen::EARTH)
-        {
-            //Apply drag force
-            player.force += {App->physics->dragDirection.x * DRAG_FORCE, App->physics->dragDirection.y * DRAG_FORCE };
-            LOG("Apply Drag to force: %f, %f", player.force.x, player.force.y);
-        }
     }
 
     if (App->physics->debug && player.collider != nullptr)
@@ -445,31 +440,31 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
     }
 }
 
-void ModulePlayer::UpdatePlayerDirection()
+void ModulePlayer::UpdateDrag()
 {
     if (isMovingRight == true && isMovingUp == true) //TopRight Direction +,+
     {
-        direction = { 1.0f,1.0f };
+        direction = { 1.0f,-1.0f };
     }
     else if (isMovingRight == true && isMovingDown == true) //BottomRight Direction -,+
     {
-        direction = { -1.0f,1.0f };
+        direction = { -1.0f,-1.0f };
     }
     else if (isMovingLeft == true && isMovingDown == true) //BottomLeft Direction -,- => +,+
     {
-        direction = { -1.0f,-1.0f };
+        direction = { -1.0f,1.0f };
     }
     else if (isMovingLeft == true && isMovingUp == true) //TopLeft Direction +,- 
     {
-        direction = { 1.0f,-1.0f };
+        direction = { 1.0f,1.0f };
     }
     else if (isMovingDown == true)
     {
-        direction = { 0.0f,-1.0f };
+        direction = { 0.0f,1.0f };
     }
     else if (isMovingUp == true)
     {
-        direction = { 0.0f,1.0f };
+        direction = { 0.0f,-1.0f };
     }
     else if (isMovingRight == true)
     {
@@ -479,6 +474,7 @@ void ModulePlayer::UpdatePlayerDirection()
     {
         direction = { -1.0f,0.0f };
     }
+    App->physics->UpdateDrag(direction);
 }
 
 void ModulePlayer::CreatePlayer()

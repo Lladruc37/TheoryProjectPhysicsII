@@ -113,8 +113,6 @@ UpdateStatus ModulePhysics::Update(float dt)
         if (tmp->data->mass != 0.0f)
         {
             UpdatePhysics(tmp->data, dt);
-            if (tmp->data->collider->type == Collider::Type::PLAYER)
-                UpdateDrag(App->player->direction);
         }
         tmp = tmp->next;
     }
