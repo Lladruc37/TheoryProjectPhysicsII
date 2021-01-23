@@ -258,6 +258,13 @@ UpdateStatus ModulePlayer::Update(float dt)
             player.speed.x = 500.0f;
         else if (player.speed.x < -500.0f)
             player.speed.x = -500.0f;
+
+        //Current direction of player
+        UpdatePlayerDirection();
+        //double radAngle = player.angle * (3.141516 / 180);
+        //direction.x = cos(radAngle);
+        //direction.y = sin(radAngle);
+        LOG("direction = (%f,%f)", direction.x, direction.y);
     }
     else
     {
@@ -432,6 +439,42 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
                 }
             }
         }
+    }
+}
+
+void ModulePlayer::UpdatePlayerDirection()
+{
+    if (isMovingRight == true && isMovingUp == true) //TopRight Direction +,+
+    {
+        direction = { 1.0f,1.0f };
+    }
+    else if (isMovingRight == true && isMovingDown == true) //BottomRight Direction -,+
+    {
+        direction = { -1.0f,1.0f };
+    }
+    else if (isMovingLeft == true && isMovingDown == true) //BottomLeft Direction -,- => +,+
+    {
+        direction = { -1.0f,-1.0f };
+    }
+    else if (isMovingLeft == true && isMovingUp == true) //TopLeft Direction +,- 
+    {
+        direction = { 1.0f,-1.0f };
+    }
+    else if (isMovingDown == true)
+    {
+        direction = { 0.0f,-1.0f };
+    }
+    else if (isMovingUp == true)
+    {
+        direction = { 0.0f,1.0f };
+    }
+    else if (isMovingRight == true)
+    {
+        direction = { 1.0f,0.0f };
+    }
+    else if (isMovingLeft == true)
+    {
+        direction = { -1.0f,0.0f };
     }
 }
 

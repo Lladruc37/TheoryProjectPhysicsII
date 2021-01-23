@@ -107,13 +107,14 @@ UpdateStatus ModulePhysics::PreUpdate()
 UpdateStatus ModulePhysics::Update(float dt)
 {
     UpdateGravity();
-
     p2List_item<Object*>* tmp = objects.GetFirst();
     while (tmp != nullptr)
     {
         if (tmp->data->mass != 0.0f)
         {
             UpdatePhysics(tmp->data, dt);
+            if (tmp->data->collider->type == Collider::Type::PLAYER)
+                UpdateDrag(App->player->direction);
         }
         tmp = tmp->next;
     }
@@ -256,6 +257,16 @@ void ModulePhysics::UpdatePhysics(Object* object, float dt)
         {
             object->collider->SetPos(object->pos.x, object->pos.y, object->collider->rect.w, object->collider->rect.h);
         }
+    }
+    if (object->speed.y < 0)
+    {
+        App->player->isMovingUp = true;
+        App->player->isMovingDown = false;
+    }
+    else
+    {
+        App->player->isMovingUp = false;
+        App->player->isMovingDown = true;
     }
 }
 
@@ -566,4 +577,32 @@ void ModulePhysics::Buoyancy(Object* A, Object* B)
     float tmpForce = B->force.y + (B->mass * gravity.y - (WATER_DENSITY)*volume * gravity.y);
     B->force.y = tmpForce;
     B->speed.y *= DAMPEN;
+}
+
+void ModulePhysics::UpdateDrag(fPoint direction)
+{
+    dragDirection.x = (direction.x != 0 ? -1 * direction.x : 0);
+    dragDirection.y = (direction.y != 0 ? -1 * direction.y : 0);
+    
+    LOG("Drag direction = (%f,%f)", dragDirection.x, dragDirection.y);
+    /*if (direction.x > 0 && direction.y > 0) //TopRight Direction +,+ => -,-
+    {
+        dragDirection.x = -1 * direction.x;
+        dragDirection.y = -1 * direction.y;
+    }
+    else if (direction.x < 0 && direction.y > 0) //BottomRight Direction -,+ => +,-
+    {
+        dragDirection.x = -1 * direction.x;
+        dragDirection.y = -1 * direction.y;
+    }
+    else if (direction.x < 0 && direction.y < 0) //BottomLeft Direction -,- => +,+
+    {
+        dragDirection.x = -1 * direction.x;
+        dragDirection.y = -1 * direction.y;
+    }
+    else if (direction.x < 0 && direction.y > 0) //TopLeft Direction +,- => -,+
+    {
+        dragDirection.x = -1 * direction.x;
+        dragDirection.y = -1 * direction.y;
+    }*/
 }

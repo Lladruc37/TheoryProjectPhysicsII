@@ -74,9 +74,12 @@ private:
 	// Applies buoyancy to the object B
 	void Buoyancy(Object* A, Object* B);
 
+	void UpdateDrag(fPoint direction);
+
 public:
 	fPoint gravity;
 	bool debug;
+	fPoint dragDirection;
 
 private:
 	// List of all existing objects in the scene

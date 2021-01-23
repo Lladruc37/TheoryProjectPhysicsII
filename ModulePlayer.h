@@ -21,6 +21,7 @@ public:
     UpdateStatus PostUpdate();
     bool CleanUp();
     void OnCollision(Collider* c1, Collider* c2);
+    void UpdatePlayerDirection();
 
 public:
     SDL_Texture* playerTex;
@@ -39,6 +40,8 @@ public:
     float flagAngle;
     iPoint flagPosition;
     uint flagFx;
+
+    fPoint direction;
 
     bool isMovingUp;
     bool isMovingLeft;
