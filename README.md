@@ -51,4 +51,4 @@ Will you be able to complete the mission?
  - Sergi Colomer Ferrer ([Github](https://github.com/Lladruc37))
  - Sebastian Delgado Vargas ([Github](https://github.com/Vinskky))
  
-  ![Logo](https://github.com/WillyTrek19/RaceCarGodHand/blob/main/RaceCar_GodHand/Screenshots/logo.png?raw=true)
+  ![Logo](https://github.com/Lladruc37/TheoryProjectPhysicsII/blob/main/Screenshots/logo.png)
