@@ -261,10 +261,7 @@ UpdateStatus ModulePlayer::Update(float dt)
 
         //Current direction of player
         UpdatePlayerDirection();
-        //double radAngle = player.angle * (3.141516 / 180);
-        //direction.x = cos(radAngle);
-        //direction.y = sin(radAngle);
-        LOG("direction = (%f,%f)", direction.x, direction.y);
+        //LOG("direction = (%f,%f)", direction.x, direction.y);
     }
     else
     {
@@ -290,6 +287,12 @@ UpdateStatus ModulePlayer::PostUpdate()
     else
     {
         App->renderer->Blit(playerTex, player.pos.x - 60, player.pos.y - 28, false, (double)player.angle);
+        if (App->sceneIntro->currentScreen == GameScreen::EARTH)
+        {
+            //Apply drag force
+            player.force += {App->physics->dragDirection.x * DRAG_FORCE, App->physics->dragDirection.y * DRAG_FORCE };
+            LOG("Apply Drag to force: %f, %f", player.force.x, player.force.y);
+        }
     }
 
     if (App->physics->debug && player.collider != nullptr)

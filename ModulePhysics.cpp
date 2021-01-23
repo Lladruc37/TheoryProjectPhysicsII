@@ -584,25 +584,5 @@ void ModulePhysics::UpdateDrag(fPoint direction)
     dragDirection.x = (direction.x != 0 ? -1 * direction.x : 0);
     dragDirection.y = (direction.y != 0 ? -1 * direction.y : 0);
     
-    LOG("Drag direction = (%f,%f)", dragDirection.x, dragDirection.y);
-    /*if (direction.x > 0 && direction.y > 0) //TopRight Direction +,+ => -,-
-    {
-        dragDirection.x = -1 * direction.x;
-        dragDirection.y = -1 * direction.y;
-    }
-    else if (direction.x < 0 && direction.y > 0) //BottomRight Direction -,+ => +,-
-    {
-        dragDirection.x = -1 * direction.x;
-        dragDirection.y = -1 * direction.y;
-    }
-    else if (direction.x < 0 && direction.y < 0) //BottomLeft Direction -,- => +,+
-    {
-        dragDirection.x = -1 * direction.x;
-        dragDirection.y = -1 * direction.y;
-    }
-    else if (direction.x < 0 && direction.y > 0) //TopLeft Direction +,- => -,+
-    {
-        dragDirection.x = -1 * direction.x;
-        dragDirection.y = -1 * direction.y;
-    }*/
+    //LOG("Drag direction = (%f,%f)", dragDirection.x, dragDirection.y);
 }

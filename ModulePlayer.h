@@ -7,6 +7,8 @@
 #include "p2Point.h"
 #include "Object.h"
 
+#define DRAG_FORCE 200.0f
+
 class ModulePlayer : public Module
 {
 public:
