@@ -1,7 +1,6 @@
 # Project: Apollo (Physics Engine)
 ### Theory project for Physics II to test our knowledge on fundamental game physics by creating a physics engine from scratch.
 ![Screenshot](https://github.com/Lladruc37/TheoryProjectPhysicsII/blob/main/Screenshots/Screenshot.png)
-(Link to the github project [here](https://github.com/Lladruc37/TheoryProjectPhysicsII/))
 ## Game description
 The year is 2121. Americans want to retake Project Apollo (And this time **for real**). With their flying saucer located in the mighty, wild lands of Florida, their plan is to capitalize the moon once and for all from those pesky reds.
 
@@ -51,5 +50,6 @@ Will you be able to complete the mission?
  - Guillem Álava Burgueño ([Github](https://github.com/WillyTrek19))
  - Sergi Colomer Ferrer ([Github](https://github.com/Lladruc37))
  - Sebastian Delgado Vargas ([Github](https://github.com/Vinskky))
+ (Link to the github project [here](https://github.com/Lladruc37/TheoryProjectPhysicsII/))
  
   ![Logo](https://github.com/Lladruc37/TheoryProjectPhysicsII/blob/main/Screenshots/logo.png)
