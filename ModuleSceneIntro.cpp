@@ -25,24 +25,24 @@ bool ModuleSceneIntro::Start()
 
     // TITLE SCREEN //
     currentScene = TITLE_SCREEN;
-    bgTitle = App->textures->Load("Assets/Textures/TitleScreen.png");
-    App->audio->PlayMusic("Assets/Sound/title.ogg", 0.0f);
+    bgTitle = App->textures->Load("Game/Assets/Textures/TitleScreen.png");
+    App->audio->PlayMusic("Game/Assets/Sound/title.ogg", 0.0f);
 
     // GAME //
     startGame = false;
     currentScreen = GameScreen::EARTH;
-    bgEarth = App->textures->Load("Assets/Textures/BG.png");
-    bgAsteroids = App->textures->Load("Assets/Textures/BG2.png");
-    bgMoon = App->textures->Load("Assets/Textures/BG3.png");
-    bgWater = App->textures->Load("Assets/Textures/BG4.png");
-    flagTxt = App->textures->Load("Assets/Textures/Flag.png");
-    asteroidTxt = App->textures->Load("Assets/Textures/Asteroid.png");
+    bgEarth = App->textures->Load("Game/Assets/Textures/BG.png");
+    bgAsteroids = App->textures->Load("Game/Assets/Textures/BG2.png");
+    bgMoon = App->textures->Load("Game/Assets/Textures/BG3.png");
+    bgWater = App->textures->Load("Game/Assets/Textures/BG4.png");
+    flagTxt = App->textures->Load("Game/Assets/Textures/Flag.png");
+    asteroidTxt = App->textures->Load("Game/Assets/Textures/Asteroid.png");
 
     srand(time(NULL));
 
     // WIN/LOSE //
-    gameOverTxt = App->textures->Load("Assets/Textures/GameOver.png");
-    victoryTxt = App->textures->Load("Assets/Textures/MissionComplete.png");
+    gameOverTxt = App->textures->Load("Game/Assets/Textures/GameOver.png");
+    victoryTxt = App->textures->Load("Game/Assets/Textures/MissionComplete.png");
 
     return ret;
 }

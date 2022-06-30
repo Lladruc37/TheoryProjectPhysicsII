@@ -22,8 +22,8 @@ ModulePlayer::~ModulePlayer()
 bool ModulePlayer::Start()
 {
     LOG("Loading player");
-    playerTex = App->textures->Load("Assets/Textures/Ovni.png");
-    explosion = App->textures->Load("Assets/Textures/Explosion.png");
+    playerTex = App->textures->Load("Game/Assets/Textures/Ovni.png");
+    explosion = App->textures->Load("Game/Assets/Textures/Explosion.png");
     explosionAnim.loop = false;
     explosionAnim.speed = 15.0f;
     explosionAnim.Reset();
@@ -36,9 +36,9 @@ bool ModulePlayer::Start()
     flagPosition = { 0,0 };
     flagAngle = 0.0f;
 
-    movingFx = App->audio->LoadFx("Assets/Sound/Fx/ovni.wav");
-    explosionFx = App->audio->LoadFx("Assets/Sound/Fx/expurosion.wav");
-    flagFx = App->audio->LoadFx("Assets/Sound/Fx/checkpoint.wav");
+    movingFx = App->audio->LoadFx("Game/Assets/Sound/Fx/ovni.wav");
+    explosionFx = App->audio->LoadFx("Game/Assets/Sound/Fx/expurosion.wav");
+    flagFx = App->audio->LoadFx("Game/Assets/Sound/Fx/checkpoint.wav");
 
     wasMovingFx = false;
     movingChannel = -1;
@@ -180,7 +180,7 @@ UpdateStatus ModulePlayer::PreUpdate()
         {
             App->sceneIntro->currentScreen = GameScreen::EARTH;
             App->sceneIntro->currentScene = Scene::TITLE_SCREEN;
-            App->audio->PlayMusic("Assets/Sound/title.ogg", 0.0f);
+            App->audio->PlayMusic("Game/Assets/Sound/title.ogg", 0.0f);
             victory = false;
             onceMusic = true;
             App->physics->Disable();
@@ -277,7 +277,7 @@ void ModulePlayer::OnCollision(Collider* c1, Collider* c2)
                     player.speed.x = 0.0f;
                     if (onceMusic)
                     {
-                        App->audio->PlayMusic("Assets/Sound/victory.ogg", 0.0f);
+                        App->audio->PlayMusic("Game/Assets/Sound/victory.ogg", 0.0f);
                         onceMusic = false;
                     }
                 }

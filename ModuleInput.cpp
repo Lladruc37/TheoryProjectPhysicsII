@@ -36,6 +36,7 @@ bool ModuleInput::Init()
 // Called every draw update
 UpdateStatus ModuleInput::PreUpdate()
 {
+	bool ret = true;
 	SDL_PumpEvents();
 
 	const Uint8* keys = SDL_GetKeyboardState(NULL);
@@ -58,12 +59,19 @@ UpdateStatus ModuleInput::PreUpdate()
 		}
 	}
 
-	if (keyboard[SDL_SCANCODE_ESCAPE] == KEY_UP)
-		return UPDATE_STOP;
-
 	SDL_GetMouseState(&mouseX, &mouseY);
 	mouseX /= SCREEN_SIZE;
 	mouseY /= SCREEN_SIZE;
+
+	SDL_Event event;
+	while (SDL_PollEvent(&event))
+	{
+		if(event.type == SDL_QUIT)
+			ret = false;
+	}
+
+	if (keyboard[SDL_SCANCODE_ESCAPE] == KEY_UP || ret == false)
+		return UPDATE_STOP;
 
 	return UPDATE_CONTINUE;
 }
